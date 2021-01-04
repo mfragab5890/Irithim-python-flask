@@ -1,2 +1,2 @@
-# Irithim-python-flask
- this project is subjected to Irithm 
+# Irithm-python-flask
+ this project is subjected to Irithm
