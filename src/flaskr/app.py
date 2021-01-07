@@ -5,16 +5,22 @@ import os
 from flask import Flask, request, jsonify, abort
 import json
 from flask_cors import CORS
-from src.models.models import *
+from models.models import *
+from .session import setup_session
+
+
 # ----------------------------------------------------------------------------#
 # App Config.
 # ----------------------------------------------------------------------------#
-
 def create_app(test_config=None):
     # create and configure the app
-    app = Flask(__name__, instance_relative_config=True)
-    setup_db(app)
+    app = Flask(__name__)
+    # wrap database to app
+    setup_db(app, database_name)
+    # use cors with app
     CORS(app)
+    # wrap app and database to session
+    setup_session(app, db)
 
     # CORS Headers
     @app.after_request
@@ -22,6 +28,17 @@ def create_app(test_config=None):
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
         response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
         return response
+
+
+
+    @app.route('/', methods=[ 'GET' ])
+    def index():
+        """
+        example endpoint
+        """
+        return 'running good'
+
+
 
 
 
@@ -91,4 +108,3 @@ def create_app(test_config=None):
         }), 403
 
     return app
-
