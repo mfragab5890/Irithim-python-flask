@@ -2,25 +2,23 @@
 # Imports
 # ----------------------------------------------------------------------------#
 import os
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify, abort, session
 import json
 from flask_cors import CORS
 from models.models import *
-from .session import setup_session
+from .auth import *
 
+# creating and initializing the app.
 
-# ----------------------------------------------------------------------------#
-# App Config.
-# ----------------------------------------------------------------------------#
 def create_app(test_config=None):
-    # create and configure the app
+    # ----------------------------------------------------------------------------#
+    # App Config.
+    # ----------------------------------------------------------------------------#
     app = Flask(__name__)
     # wrap database to app
     setup_db(app, database_name)
-    # use cors with app
+    # using cors with app
     CORS(app)
-    # wrap app and database to session
-    setup_session(app, db)
 
     # CORS Headers
     @app.after_request
@@ -28,15 +26,64 @@ def create_app(test_config=None):
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
         response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
         return response
-
-
-
+    # testing app
     @app.route('/', methods=[ 'GET' ])
     def index():
-        """
-        example endpoint
-        """
-        return 'running good'
+        session[ 'data' ] = 1
+        return str(session[ 'data' ])
+
+    # ----------------------------------------------------------------------------#
+    # owner end points.
+    # ----------------------------------------------------------------------------#
+    # get unconfirmed users
+    # confirm users or delete sign-up request
+    # change role
+
+    # ----------------------------------------------------------------------------#
+    # User end points.
+    # ----------------------------------------------------------------------------#
+    # sign-up endpoint
+    @app.route('/register', methods=[ 'POST' ])
+    def create_user():
+        body = request.get_json()
+
+        new_user_name = body.get('userName', None)
+        new_email = body.get('email', None)
+        new_role = body.get('role', None)
+        new_password = body.get('password', None)
+
+        try:
+            if new_user_name is None or new_email is None or new_role is None or new_password is None:
+
+                abort(400)
+
+            else:
+                user = User(user_name=new_user_name,
+                            email=new_email,
+                            role=new_role,
+                            password=set_password(new_password)
+                            )
+                user.insert()
+
+                return jsonify({
+                    'success': True,
+                    'message': 'User created successfully'
+                })
+
+
+        except Exception as e:
+            abort(422)
+    # get all users paginated endpoint
+    # user log-in endpoint
+    # get all lists paginated endpoint
+    # get list by id with cards in it endpoint
+    # create list endpoint
+    #
+
+
+
+
+
 
 
 

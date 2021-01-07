@@ -3,6 +3,7 @@ from flask_migrate import Migrate
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+
 # Declare database name
 database_name = "irithm"
 
@@ -22,8 +23,77 @@ def setup_db(app, database_name):
     # wrapping app to Bcrypt
     flask_bcrypt = Bcrypt(app)
 
-# Users table
 
+# create our hashing functions
+def set_password(password):
+    return flask_bcrypt.generate_password_hash(password).decode('utf-8')
+
+
+def check_password(password_hash, password):
+    return flask_bcrypt.check_password_hash(password_hash, password)
+
+
+# unconfirmed users table
+class Owner(db.Model):
+    __tablename__ = 'owner'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_name = db.Column(db.String, nullable=False, unique=True)
+    email = db.Column(db.String, nullable=False, unique=True)
+    password_hash = db.Column(db.String(128), nullable=False)
+    role = db.Column(db.String, default='owner')
+
+    def __init__(self, user_name, email, password, role):
+        self.user_name = user_name
+        self.email = email
+        self.password_hash = password
+        self.role = role
+
+    def format(self):
+        return {
+            'id': self.id,
+            'user_name': self.user_name,
+            'email': self.email,
+            'password': self.password,
+            'role': self.role
+        }
+
+
+# unconfirmed users table
+class User_unconfirmed(db.Model):
+    __tablename__ = 'unconfirmed_users'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_name = db.Column(db.String, nullable=False, unique=True)
+    email = db.Column(db.String, nullable=False, unique=True)
+    password_hash = db.Column(db.String(128), nullable=False)
+    role = db.Column(db.Boolean, default=False)
+
+    def __init__(self, user_name, email, password, role):
+        self.user_name = user_name
+        self.email = email
+        self.password_hash = password
+        self.role = role
+
+    def insert(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def format(self):
+        return {
+            'id': self.id,
+            'user_name': self.user_name,
+            'email': self.email,
+            'password': self.password,
+            'role': self.role
+        }
+
+
+# Users table
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -31,19 +101,11 @@ class User(db.Model):
     user_name = db.Column(db.String, nullable=False, unique=True)
     email = db.Column(db.String, nullable=False, unique=True)
     password_hash = db.Column(db.String(128), nullable=False)
-    role = db.Column(db.Boolean, default=False, nullable=False)
+    role = db.Column(db.Boolean, nullable=False)
     lists = db.relationship('user_lists', backref='userLists', lazy=True, cascade="all, delete-orphan")
     cards = db.relationship('cards', backref='user_cards', lazy=True, cascade="all, delete-orphan")
     comments = db.relationship('comments', backref='user_comments', lazy=True, cascade="all, delete-orphan")
     replies = db.relationship('replies', backref='user_replies', lazy=True, cascade="all, delete-orphan")
-
-    # below our user model, we will create our hashing functions
-
-    def set_password(self, password):
-        self.password_hash = flask_bcrypt.generate_password_hash(password).decode('utf-8')
-
-    def check_password(self, password_hash, password):
-        return flask_bcrypt.check_password_hash(password_hash, password)
 
     def __init__(self, user_name, email, password, role):
         self.user_name = user_name
@@ -82,6 +144,7 @@ class List(db.Model):
     creator_id = db.Column(db.Integer, nullable=False)
     users = db.relationship('user_lists', backref='list_users', lazy=True, cascade="all, delete-orphan")
     cards = db.relationship('cards', backref='list_cards', lazy=True, cascade="all, delete-orphan")
+
     def __init__(self, title, creator_id):
         self.title = title
         self.creator_id = creator_id
@@ -106,7 +169,7 @@ class List(db.Model):
 
 
 # User lists table
-
+# this will kepp the records for all the lists assigned to members
 class UserLists(db.Model):
     __tablename__ = 'users_lists'
 
@@ -150,7 +213,6 @@ class Cards(db.Model):
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     comments = db.relationship('comments', backref='card_comments', lazy=True, cascade="all, delete-orphan")
 
-
     def __init__(self, title, description, comments_count, list_id, creator_id):
         self.title = title
         self.description = description
@@ -179,6 +241,7 @@ class Cards(db.Model):
             'creator_id': self.creator_id
         }
 
+
 # Comments table
 
 class Comments(db.Model):
@@ -190,7 +253,6 @@ class Comments(db.Model):
     card_id = db.Column(db.Integer, db.ForeignKey('cards.id'), nullable=False)
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     replies = db.relationship('replies', backref='comment_replies', lazy=True, cascade="all, delete-orphan")
-
 
     def __init__(self, content, replies_count, card_id, creator_id):
         self.content = content
@@ -217,6 +279,7 @@ class Comments(db.Model):
             'replies_count': self.replies_count,
             'creator_id': self.creator_id
         }
+
 
 # Replies table
 
