@@ -33,7 +33,7 @@ def check_password(password_hash, password):
     return flask_bcrypt.check_password_hash(password_hash, password)
 
 
-# unconfirmed users table
+# owner table
 class Owner(db.Model):
     __tablename__ = 'owner'
 
