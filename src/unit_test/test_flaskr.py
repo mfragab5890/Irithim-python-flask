@@ -2,7 +2,7 @@ import os
 import unittest
 import json
 from flask_sqlalchemy import SQLAlchemy
-from src.flaskr.app import create_app
+from src.app import create_app
 from src.models.models import *
 
 

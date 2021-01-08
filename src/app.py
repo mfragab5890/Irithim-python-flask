@@ -4,12 +4,13 @@
 import os
 from flask import Flask, request, jsonify, abort, session
 from flask_cors import CORS
-from models import models
-from models import *
-from flaskr import auth
+from .models.models import *
+from .auth import *
 
 
 # creating and initializing the app.
+
+
 def create_app(test_config=None):
     # ----------------------------------------------------------------------------#
     # App Config.
@@ -26,7 +27,9 @@ def create_app(test_config=None):
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
         response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
         return response
+
     results_per_page = 100
+
     # testing app
     @app.route('/', methods=[ 'GET' ])
     def index():
@@ -168,24 +171,23 @@ def create_app(test_config=None):
     def get_users(page):
         # check if user logged in and has permission
 
-        if check_permissions(session['token'],'get_all_users',session['user_id']):
+        if check_permissions(session[ 'token' ], 'get_all_users', session[ 'user_id' ]):
             if page:
-                users_query = User.query\
-                    .with_entities(User.id, User.user_name, User.email, User.role)\
+                users_query = User.query \
+                    .with_entities(User.id, User.user_name, User.email, User.role) \
                     .paginate(page, results_per_page, False).items
                 users = [ user.format() for user in users_query ]
                 return users
             else:
                 page = 1
-                users_query = User.query\
-                    .with_entities(User.id, User.user_name, User.email, User.role)\
-                    .paginate(page,results_per_page,False).items
+                users_query = User.query \
+                    .with_entities(User.id, User.user_name, User.email, User.role) \
+                    .paginate(page, results_per_page, False).items
                 users = [ user.format() for user in users_query ]
                 return users
 
         else:
             abort(401)
-
 
     # user log-in endpoint.
     # this endpoint should update session with user id and token if login is verified
@@ -227,7 +229,7 @@ def create_app(test_config=None):
         pass
 
     # assign member to list by user id and list id endpoint.
-    #this endpoint should take list_id and user_id
+    # this endpoint should take list_id and user_id
     # permission: assign_member_list
     @app.route('/assignation', methods=[ 'POST' ])
     def assign_member():
@@ -253,7 +255,7 @@ def create_app(test_config=None):
         pass
 
     # create card endpoint.
-    #this endpoint should take title, description, comments_count=0, list_id, creator_id
+    # this endpoint should take title, description, comments_count=0, list_id, creator_id
     # permission: create_card
     @app.route('/card', methods=[ 'POST' ])
     def create_card():
@@ -329,11 +331,6 @@ def create_app(test_config=None):
     @app.route('/reply/<int:reply_id>', methods=[ 'DELETE' ])
     def delete_reply():
         pass
-
-
-
-
-
 
     # ----------------------------------------------------------------------------#
     # Error Handlers.
