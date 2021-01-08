@@ -43,7 +43,7 @@ Or create your own database and change the database_name in src\models\models.py
 
 ## Data Migration & Running the server
 
-From within the `src\flaskr` directory first ensure you are working using your created virtual environment.
+From within the `src\api` directory first ensure you are working using your created virtual environment.
 First import our app to flask, execute:
 ```bash
 export FLASK_APP=app
