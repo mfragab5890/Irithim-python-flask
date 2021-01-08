@@ -19,37 +19,37 @@ class IrithmTestCase(unittest.TestCase):
         self.new_user_1 = {
             'user_name': 'user_1',
             'email': 'user_1@example.com',
-            'password_hash': 'djbvjshvhzxjvhzxmbv,zxb',
+            'password': 'djbvjshvhzxjvhzxmbv,zxb',
             'role': True
         }
 
         self.new_user_2 = {
             'user_name': 'user_2',
             'email': 'user_1@example.com',
-            'password_hash': 'djbvjshvhzxjvhzxmbv,zxb',
+            'password': 'djbvjshvhzxjvhzxmbv,zxb',
             'role': True
         }
         self.new_user_3 = {
             'user_name': 'user_1',
             'email': 'user_3@example.com',
-            'password_hash': 'djbvjshvhzxjvhzxmbv,zxb',
+            'password': 'djbvjshvhzxjvhzxmbv,zxb',
             'role': True
         }
         self.new_user_4 = {
             'user_name': 'user_4',
-            'password_hash': 'djbvjshvhzxjvhzxmbv,zxb',
+            'password': 'djbvjshvhzxjvhzxmbv,zxb',
             'role': True
         }
         self.new_user_5 = {
             'user_name': 'user_5',
             'email': 'user_5@example.com',
-            'password_hash': 'djbvjshvhzxjvhzxmbv,zxb',
+            'password': 'djbvjshvhzxjvhzxmbv,zxb',
             'role': True
         }
         self.new_user_6 = {
             'user_name': 'user_6',
             'email': 'user_6@example.com',
-            'password_hash': 'djbvjshvhzxjvhzxmbv,zxb',
+            'password': 'djbvjshvhzxjvhzxmbv,zxb',
             'role': True
         }
 

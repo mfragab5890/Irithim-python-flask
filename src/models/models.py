@@ -9,6 +9,8 @@ database_name = "irithm"
 
 # initiate db with no assignment
 db = SQLAlchemy()
+# initiate Bcrypt
+flask_bcrypt = Bcrypt()
 
 
 # function is used to bend our app with the database
@@ -21,7 +23,7 @@ def setup_db(app, database_name):
     # create instance migrate for data migration
     migrate = Migrate(app, db, compare_type=True)
     # wrapping app to Bcrypt
-    flask_bcrypt = Bcrypt(app)
+    flask_bcrypt.app = app
 
 
 # create our hashing functions
@@ -49,12 +51,15 @@ class Owner(db.Model):
         self.password_hash = password
         self.role = role
 
+    def update(self):
+        db.session.commit()
+
     def format(self):
         return {
             'id': self.id,
             'user_name': self.user_name,
             'email': self.email,
-            'password': self.password,
+            'password': self.password_hash,
             'role': self.role
         }
 
@@ -88,7 +93,7 @@ class User_unconfirmed(db.Model):
             'id': self.id,
             'user_name': self.user_name,
             'email': self.email,
-            'password': self.password,
+            'password': self.password_hash,
             'role': self.role
         }
 
@@ -102,10 +107,10 @@ class User(db.Model):
     email = db.Column(db.String, nullable=False, unique=True)
     password_hash = db.Column(db.String(128), nullable=False)
     role = db.Column(db.Boolean, nullable=False)
-    lists = db.relationship('user_lists', backref='userLists', lazy=True, cascade="all, delete-orphan")
-    cards = db.relationship('cards', backref='user_cards', lazy=True, cascade="all, delete-orphan")
-    comments = db.relationship('comments', backref='user_comments', lazy=True, cascade="all, delete-orphan")
-    replies = db.relationship('replies', backref='user_replies', lazy=True, cascade="all, delete-orphan")
+    lists = db.relationship('UserLists', backref='userLists', lazy=True, cascade="all, delete-orphan")
+    cards = db.relationship('Cards', backref='user_cards', lazy=True, cascade="all, delete-orphan")
+    comments = db.relationship('Comments', backref='user_comments', lazy=True, cascade="all, delete-orphan")
+    replies = db.relationship('Replies', backref='user_replies', lazy=True, cascade="all, delete-orphan")
 
     def __init__(self, user_name, email, password, role):
         self.user_name = user_name
@@ -129,7 +134,7 @@ class User(db.Model):
             'id': self.id,
             'user_name': self.user_name,
             'email': self.email,
-            'password': self.password,
+            'password_hash': self.password_hash,
             'role': self.role
         }
 
@@ -142,8 +147,8 @@ class List(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     creator_id = db.Column(db.Integer, nullable=False)
-    users = db.relationship('user_lists', backref='list_users', lazy=True, cascade="all, delete-orphan")
-    cards = db.relationship('cards', backref='list_cards', lazy=True, cascade="all, delete-orphan")
+    users = db.relationship('UserLists', backref='list_users', lazy=True, cascade="all, delete-orphan")
+    cards = db.relationship('Cards', backref='list_cards', lazy=True, cascade="all, delete-orphan")
 
     def __init__(self, title, creator_id):
         self.title = title
@@ -211,7 +216,7 @@ class Cards(db.Model):
     comments_count = db.Column(db.Integer, nullable=False)
     list_id = db.Column(db.Integer, db.ForeignKey('lists.id'), nullable=False)
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    comments = db.relationship('comments', backref='card_comments', lazy=True, cascade="all, delete-orphan")
+    comments = db.relationship('Comments', backref='card_comments', lazy=True, cascade="all, delete-orphan")
 
     def __init__(self, title, description, comments_count, list_id, creator_id):
         self.title = title
@@ -252,7 +257,7 @@ class Comments(db.Model):
     replies_count = db.Column(db.Integer, nullable=False)
     card_id = db.Column(db.Integer, db.ForeignKey('cards.id'), nullable=False)
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    replies = db.relationship('replies', backref='comment_replies', lazy=True, cascade="all, delete-orphan")
+    replies = db.relationship('Replies', backref='comment_replies', lazy=True, cascade="all, delete-orphan")
 
     def __init__(self, content, replies_count, card_id, creator_id):
         self.content = content

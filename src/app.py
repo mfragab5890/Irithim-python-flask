@@ -2,7 +2,7 @@
 # Imports
 # ----------------------------------------------------------------------------#
 import os
-from flask import Flask, request, jsonify, abort, session
+from flask import Flask, render_template, request, Response, flash, redirect, url_for, jsonify, abort, session
 from flask_cors import CORS
 from .models.models import *
 from .auth import *
@@ -28,13 +28,19 @@ def create_app(test_config=None):
         response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
         return response
 
+    # variable for pagination to show results per page
     results_per_page = 100
 
     # testing app
     @app.route('/', methods=[ 'GET' ])
     def index():
-        session[ 'user_id' ] = 1
-        return str(session[ 'user_id' ])
+        owner = Owner.query.first()
+        owner.role = 'owner'
+        name = owner.user_name
+        owner.update()
+        users = Owner.query.all()
+        user = [ user.format() for user in users ]
+        return name
 
     # ----------------------------------------------------------------------------#
     # owner end points.
@@ -69,7 +75,8 @@ def create_app(test_config=None):
                                 email=new_user.email,
                                 role=new_user.role,
                                 password=new_user.password)
-
+                    user.insert()
+                    new_user.delete()
                     return jsonify({
                         'success': True,
                         'message': 'User confirmed successfully'
@@ -133,19 +140,20 @@ def create_app(test_config=None):
     def create_user():
         body = request.get_json()
 
-        new_user_name = body.get('userName', None)
+        new_user_name = body.get('user_name', None)
         new_email = body.get('email', None)
-        new_role = body.get('role', None)
+        new_role = body.get('role', False)
+        if new_role:
+            new_role=True
         new_password = body.get('password', None)
-
         try:
-            if new_user_name is None or new_email is None or new_role is None or new_password is None:
+            if new_user_name is None or new_email is None or new_password is None:
 
-                abort(400)
+                abort(400, 'data messing')
             # check that user name or email is not used before
-            elif User.query.filter_by(user_name=new_user_name):
+            elif User.query.filter_by(user_name=new_user_name).first():
                 abort(404, 'User name is already used Please choose another one')
-            elif User.query.filter_by(email=new_email):
+            elif User.query.filter_by(email=new_email).first():
                 abort(404, 'E-Mail is already used Please choose another one or login')
 
             else:
@@ -191,9 +199,28 @@ def create_app(test_config=None):
 
     # user log-in endpoint.
     # this endpoint should update session with user id and token if login is verified
-    @app.route('/login', methods=[ 'GET' ])
+    @app.route('/login', methods=[ 'POST' ])
     def user_login():
-        pass
+        body = request.get_json()
+        user_name = body.get('user_name', None)
+        email = body.get('email', None)
+        password = body.get('password', None)
+        if not password:
+            abort(400, 'password not found')
+        elif not email or not user_name:
+            abort(400, 'email and user name not found')
+        else:
+
+            if email:
+                user = User.query.filter_by(email=email).first()
+            else:
+                user = User.queryfilter_by(user_name=user_name).first()
+
+            if check_password(user.password_hash, password):
+                session[ 'user_id' ] = user.id
+                session[ 'token' ] = get_permissions(user.id)
+            else:
+                abort(401, 'user name or password incorrect')
 
     # get all lists paginated endpoint.
     # permission: get_all_lists
