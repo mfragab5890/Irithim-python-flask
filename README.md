@@ -151,10 +151,197 @@ The API will return error types when requests fail, example:
 405: Method Not Allowed
 ```
 ### Endpoints
+#### owner end points.
 
-### GET '/'
+##### GET '/unconfirmed'
+
+- Function:get all unconfirmed users
+- Requested Arguments: None
+- Returns an object with users
+
+##### POST '/user/confirmation/<int:user_id>'
+
+- Function: confirm user sign-up request
+- Requested Arguments: user_id
+- Returns an object with success, custom message
+
+##### DELETE '/user/confirmation/<int:user_id>'
+
+- Function: delete user sign-up request
+- Requested Arguments: user_id
+- Returns an object with success, custom message
+
+##### PATCH '/user-role/<int:user_id>'
+
+- Function: change user role from admin to member and vice versa
+- Requested Arguments: user_id, role
+- Returns an object with success, custom message
+
+#### User end points:
+
+##### POST '/register'
+
+- Function: allow user to sign up and wait owner to confirm.
+- Requested Arguments:user_name, email, role
+- Returns an object with success, custom message
+
+##### GET '/users/<int:page>'
+
+- Function: get all confirmed users paginated.
+- Requested Arguments:permission to get_all_users and page number
+- Returns an object with users
+
+# user log-in endpoint.
+# this endpoint should update session with user id and token if login is verified
+##### POST '/login'
+
+- Function: make user user log-in & update session with user id and token if login is verified
+- Requested Arguments: password and user_name or email
+- Returns an object with success, custom message
+
+##### GET '/lists/<int:page>'
+
+- Function: get all lists paginated
+- Requested Arguments: permission to get_all_lists,and page number
+- Returns an object with lists
+
+##### GET '/list'
+
+- Function: get list by id with cards in it paginated
+- Requested Arguments: permission to get_list,list id and page number
+- Returns an object with list and cards
+
+##### POST '/list'
+
+- Function: create list
+- Requested Arguments: permission to create_list, title and creator_id
+- Returns an object with success and custom message
+
+##### PATCH '/list'
+
+- Function: update list by id
+- Requested Arguments:permission to update_list, list id and title
+- Returns an object with success and custom message
+
+##### DELETE '/list/<int:list_id>'
+
+- Function: delete a certain list by id
+- Requested Arguments: permission to delete_list and list id
+- Returns an object with success and custom message
+
+##### POST '/assignation'
+
+- Function: assign member to access a list
+- Requested Arguments: permission to assign_member_list, list_id and user_id
+- Returns an object with success and custom message
+
+##### DELETE '/revocation'
+
+- Function: unassign member from list
+- Requested Arguments: permission to revoke_member_list, list_id and user_id
+- Returns an object with success and custom message
+
+##### GET '/cards/<int:page>'
+
+- Function:get all cards ordered by comments count descending and paginated
+- Requested Arguments: permission to get_card & page number
+- Returns an object with cards
+
+##### GET '/card/<int:card_id>'
+
+- Function: get card by id with first three comments
+- Requested Arguments: permission to get_card and card_id
+- Returns an object with card and comments
+
+##### POST '/card'
+
+- Function: create a new card in a list
+- Requested Arguments: permission to create_card,title, description, list_id and creator_id
+- Returns an object with success and custom message
+
+##### PATCH '/card'
+
+- Function:update card by card id endpoint
+_ Requested Arguments: permission to update_card, card id, title or description
+- Returns an object with success and custom message
+
+##### DELETE '/card/<int:card_id>'
+
+Function: delete card by card id
+Requested Arguments: permission to delete_card and card_id
+Returns an object with success and custom message
+
+##### GET '/card/comments/'
+
+- Function: get all comments on a card ordered by id and paginated endpoint
+- Requested Arguments: permission to get_comment, card id and page number
+- Returns an object with 
+
+##### GET '/comment/replies'
+
+- Function: get comment by id with all replies and replies paginated
+- Requested Arguments: permission to get_comment, comment id and page number.
+- Returns an object with comment and replies
+
+##### POST '/comment'
+
+- Function: create comment on card with card id and increment comments_count in card table
+- Requested Arguments: permission to create_comment, content, card_id and creator_id
+- Returns an object with success and custom message
+
+# update comment endpoint.
+# this endpoint should take id and content
+# permission: update_comment
+@app.route('/comment', methods=[ 'PATCH' ])
+##### GET '/'
 
 #### Function:
 #### Requested Arguments:
 #### Response body:
 ##### Returns an object with 
+
+# delete comment endpoint.
+# this endpoint should subtract 1 to comments_count in card table
+# permission: delete_comment
+@app.route('/comment/<int:comment_id>', methods=[ 'DELETE' ])
+##### GET '/'
+
+#### Function:
+#### Requested Arguments:
+#### Response body:
+##### Returns an object with 
+
+# create reply endpoint.
+# this endpoint should add 1 to replies_count in comments table
+# this endpoint should take content, comment_id and creator_id
+# permission: create_replies
+@app.route('/reply', methods=[ 'POST' ])
+##### GET '/'
+
+#### Function:
+#### Requested Arguments:
+#### Response body:
+##### Returns an object with 
+
+# update reply endpoint.
+# this endpoint should take reply id and content
+# permission: update_replies
+@app.route('/reply', methods=[ 'PATCH' ])
+##### GET '/'
+
+#### Function:
+#### Requested Arguments:
+#### Response body:
+##### Returns an object with 
+
+# delete reply endpoint.
+# this endpoint should subtract 1 to replies_count in comments table
+# permission: delete_replies
+@app.route('/reply/<int:reply_id>', methods=[ 'DELETE' ])
+##### GET '/'
+
+#### Function:
+#### Requested Arguments:
+#### Response body:
+##### Returns an object with 
+

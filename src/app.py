@@ -27,11 +27,14 @@ def create_app(test_config=None):
         return response
 
     # variable for pagination to show results per page
-    results_per_page = 100
+    results_per_page = 3
 
     # testing app
     @app.route('/', methods=[ 'GET' ])
     def index():
+        session[ 'user_id' ] = 1
+        session[
+            'token' ] = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiQWRtaW4iLCJwZXJtaXNzaW9ucyI6eyJnZXRfYWxsX2xpc3RzIjoiQWxsIiwiY3JlYXRlX2xpc3QiOiJBbGwiLCJ1cGRhdGVfbGlzdCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZGVsZXRlX2xpc3QiOlsxLDIsMyw0LDUsNiw3LDgsOSwxMF0sImdldF9saXN0IjoiQWxsIiwiYXNzaWduX21lbWJlcl9saXN0IjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJyZXZva2VfbWVtYmVyX2xpc3QiOlsxLDIsMyw0LDUsNiw3LDgsOSwxMF0sImdldF9hbGxfdXNlcnMiOiJBbGwiLCJjcmVhdGVfY2FyZCI6IkFsbCIsInVwZGF0ZV9jYXJkIjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfY2FyZCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X2NhcmQiOiJBbGwiLCJjcmVhdGVfY29tbWVudCI6IkFsbCIsInVwZGF0ZV9jb21tZW50IjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfY29tbWVudCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X2NvbW1lbnQiOiJBbGwiLCJjcmVhdGVfcmVwbGllcyI6IkFsbCIsInVwZGF0ZV9yZXBsaWVzIjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfcmVwbGllcyI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X3JlcGxpZXMiOiJBbGwifX0.SPGXta7MX1hDVmi2jOXR33pexRc7M9GJ9cWEZLGKQn8'
         owner = Owner.query.first()
         owner.role = 'owner'
         name = owner.user_name
@@ -39,11 +42,12 @@ def create_app(test_config=None):
         query_user = User.query.get(1)
         user = query_user.format()
         query_lists = List.query.all()
-        lists_ids = [lst.format() for lst in query_lists]
+        lists_ids = [ lst.id for lst in query_lists ]
 
         lists_query = db.session.query(Cards).join(List) \
             .filter(Cards.list_id == 1).order_by(db.desc(Cards.id)).all()
-        user_list = [lst.id for lst in lists_query]
+        user_list = [ lst.id for lst in lists_query ]
+        user_list += lists_ids
         print(lists_query)
         return jsonify(user_list)
 
@@ -67,7 +71,7 @@ def create_app(test_config=None):
             abort(401)
 
     # confirm users
-    @app.route('/user/confirmation/<int:user_id>', methods=[ 'post' ])
+    @app.route('/user/confirmation/<int:user_id>', methods=[ 'POST' ])
     def confirm_user(user_id):
         # check if user logged in and is the owner
         if session[ 'user_id' ]:
@@ -109,7 +113,7 @@ def create_app(test_config=None):
                     abort(422)
 
     # change role
-    @app.route('/user-role/<int:user_id>', methods=[ 'DELETE' ])
+    @app.route('/user-role/<int:user_id>', methods=[ 'PATCH' ])
     def change_user_role(user_id):
         # check if user logged in and is the owner
         if session[ 'user_id' ]:
@@ -124,7 +128,7 @@ def create_app(test_config=None):
                         role = body.get('role')
                         if role:
                             user.role = True
-                        else:
+                        elif not role:
                             user.role = False
 
                 try:
@@ -183,20 +187,23 @@ def create_app(test_config=None):
     @app.route('/users/<int:page>', methods=[ 'GET' ])
     def get_users(page):
         # check if user logged in and has permission
-
-        if check_permissions(session[ 'token' ], 'get_all_users', session[ 'user_id' ]):
+        token = 0
+        logged_user_id = 0
+        if 'token' in session:
+            token = session[ 'token' ]
+        elif 'token' in session:
+            logged_user_id = session[ 'user_id' ]
+        else:
+            abort(401)
+        if check_permissions(token, 'get_all_users', logged_user_id):
             if page:
-                users_query = User.query \
-                    .with_entities(User.id, User.user_name, User.email, User.role) \
-                    .paginate(page, results_per_page, False).items
-                users = [ user.format() for user in users_query ]
+                users_query = User.query.paginate(page, results_per_page, False).items
+                users = [ user.format_no_password() for user in users_query ]
                 return jsonify(users)
             else:
                 page = 1
-                users_query = User.query \
-                    .with_entities(User.id, User.user_name, User.email, User.role) \
-                    .paginate(page, results_per_page, False).items
-                users = [ user.format() for user in users_query ]
+                users_query = User.query.paginate(page, results_per_page, False).items
+                users = [ user.format_no_password() for user in users_query ]
                 return jsonify(users)
 
         else:
@@ -224,6 +231,12 @@ def create_app(test_config=None):
             if check_password(user.password_hash, password):
                 session[ 'user_id' ] = user.id
                 session[ 'token' ] = get_permissions(user.id)
+
+                return jsonify({
+                    'success': True,
+                    'message': 'logged in successfully'
+                })
+
             else:
                 abort(401, 'user name or password incorrect')
 
@@ -261,10 +274,10 @@ def create_app(test_config=None):
                 list_cards = db.session.query(Cards).join(List) \
                     .filter(List.id == list_id) \
                     .paginate(page, results_per_page, False).items
-                cards = [crd.format() for crd in list_cards]
+                cards = [ crd.format() for crd in list_cards ]
                 return jsonify({
-                    'list':user_list,
-                    'cards':cards
+                    'list': user_list,
+                    'cards': cards
                 })
             else:
                 query_list = List.query.get(list_id)
@@ -301,7 +314,7 @@ def create_app(test_config=None):
                         .filter(List.title == new_title, List.creator_id == new_creator_id) \
                         .order_by(db.desc(List.id)).first()
                     user_list_id = user_list.id
-                    # add to assign user to list in users_lists table
+                    # assign user to list in users_lists table
                     user_id = session[ 'user_id' ]
                     new_user_list = UserLists(user_id=user_id, list_id=user_list_id)
                     new_user_list.insert()
@@ -411,7 +424,7 @@ def create_app(test_config=None):
 
                     return jsonify({
                         'success': True,
-                        'message': 'member assigned successfully'
+                        'message': 'member revoked successfully'
                     })
             else:
                 abort(401)
@@ -529,13 +542,13 @@ def create_app(test_config=None):
     @app.route('/card/<int:card_id>', methods=[ 'DELETE' ])
     def delete_card(card_id):
         try:
-            if not session['token']:
-                abort(401,'please login first')
+            if not session[ 'token' ]:
+                abort(401, 'please login first')
             if check_permissions(session[ 'token' ], 'delete_card', card_id):
                 if card_id is None:
                     abort(400, 'data messing')
                 else:
-                    user_card = List.query.get(card_id)
+                    user_card = Cards.query.get(card_id)
                     user_card.delete()
 
                     return jsonify({
@@ -599,7 +612,6 @@ def create_app(test_config=None):
                 user_comment = comment_query.format()
                 replies_query = Replies.query.order_by('id').paginate(page, results_per_page, False).items
                 comment_replies = [ reply.format() for reply in replies_query ]
-                data = user_comment + comment_replies
                 return jsonify({
                     'comment': user_comment,
                     'replies': comment_replies
@@ -613,21 +625,96 @@ def create_app(test_config=None):
     # permission: create_comment
     @app.route('/comment', methods=[ 'POST' ])
     def create_comment():
-        pass
+        body = request.get_json()
+
+        new_content = body.get('content', None)
+        new_card_id = body.get('card_id', None)
+        new_replies_count = 0
+        new_creator_id = body.get('creator_id', None)
+        try:
+            if check_permissions(session[ 'token' ], 'create_comment', new_card_id):
+                if new_content is None or new_creator_id is None or new_card_id is None:
+                    abort(400, 'data messing')
+                else:
+                    new_comment = Comments(
+                        content=new_content,
+                        replies_count=new_replies_count,
+                        creator_id=new_creator_id,
+                        card_id=new_card_id,
+                    )
+                    new_comment.insert()
+                    # increment comments count on the card
+                    user_card = Cards.query.get(new_card_id)
+                    user_card.comments_count += 1
+                    user_card.update()
+
+                    return jsonify({
+                        'success': True,
+                        'message': 'comment created successfully'
+                    })
+            else:
+                abort(401)
+
+        except Exception as e:
+            abort(422)
 
     # update comment endpoint.
     # this endpoint should take id and content
     # permission: update_comment
     @app.route('/comment', methods=[ 'PATCH' ])
     def update_comment():
-        pass
+        body = request.get_json()
+
+        new_content = body.get('content', None)
+        comment_id = body.get('comment_id', None)
+        try:
+            if check_permissions(session[ 'token' ], 'update_comment', comment_id):
+                if new_content is None or comment_id is None:
+                    abort(400, 'data messing')
+                else:
+                    user_comment = Comments.query.get(comment_id)
+                    if new_content:
+                        user_comment.title = new_content
+                    user_comment.update()
+
+                    return jsonify({
+                        'success': True,
+                        'message': 'comment updated successfully'
+                    })
+            else:
+                abort(401)
+
+        except Exception as e:
+            abort(422)
 
     # delete comment endpoint.
     # this endpoint should subtract 1 to comments_count in card table
     # permission: delete_comment
     @app.route('/comment/<int:comment_id>', methods=[ 'DELETE' ])
-    def delete_comment():
-        pass
+    def delete_comment(comment_id):
+        try:
+            if not session[ 'token' ]:
+                abort(401, 'please login first')
+            if check_permissions(session[ 'token' ], 'delete_comment', comment_id):
+                if comment_id is None:
+                    abort(400, 'data messing')
+                else:
+                    user_comment = Comments.query.get(comment_id)
+                    card_id = user_comment.card_id
+                    user_comment.delete()
+                    # decrement comments count on the card
+                    user_card = Cards.query.get(card_id)
+                    user_card.comments_count -= 1
+                    user_card.update()
+                    return jsonify({
+                        'success': True,
+                        'message': 'comment deleted successfully'
+                    })
+            else:
+                abort(401)
+
+        except Exception as e:
+            abort(422)
 
     # create reply endpoint.
     # this endpoint should add 1 to replies_count in comments table
@@ -635,21 +722,94 @@ def create_app(test_config=None):
     # permission: create_replies
     @app.route('/reply', methods=[ 'POST' ])
     def create_reply():
-        pass
+        body = request.get_json()
+
+        new_content = body.get('content', None)
+        new_comment_id = body.get('comment_id', None)
+        new_creator_id = body.get('creator_id', None)
+        try:
+            if check_permissions(session[ 'token' ], 'create_replies', new_comment_id):
+                if new_content is None or new_creator_id is None or new_comment_id is None:
+                    abort(400, 'data messing')
+                else:
+                    new_replies = Replies(
+                        content=new_content,
+                        creator_id=new_creator_id,
+                        comment_id=new_comment_id,
+                    )
+                    new_replies.insert()
+                    # increment repliess count on the card
+                    user_card = Comments.query.get(new_comment_id)
+                    user_card.replies_count += 1
+                    user_card.update()
+
+                    return jsonify({
+                        'success': True,
+                        'message': 'reply created successfully'
+                    })
+            else:
+                abort(401)
+
+        except Exception as e:
+            abort(422)
 
     # update reply endpoint.
     # this endpoint should take reply id and content
     # permission: update_replies
     @app.route('/reply', methods=[ 'PATCH' ])
     def update_reply():
-        pass
+        body = request.get_json()
+
+        new_content = body.get('content', None)
+        reply_id = body.get('reply_id', None)
+        try:
+            if check_permissions(session[ 'token' ], 'update_replies', reply_id):
+                if new_content is None or reply_id is None:
+                    abort(400, 'data messing')
+                else:
+                    user_reply = Replies.query.get(reply_id)
+                    if new_content:
+                        user_reply.title = new_content
+                    user_reply.update()
+
+                    return jsonify({
+                        'success': True,
+                        'message': 'reply updated successfully'
+                    })
+            else:
+                abort(401)
+
+        except Exception as e:
+            abort(422)
 
     # delete reply endpoint.
     # this endpoint should subtract 1 to replies_count in comments table
     # permission: delete_replies
     @app.route('/reply/<int:reply_id>', methods=[ 'DELETE' ])
-    def delete_reply():
-        pass
+    def delete_reply(reply_id):
+        try:
+            if not session[ 'token' ]:
+                abort(401, 'please login first')
+            if check_permissions(session[ 'token' ], 'delete_replies', reply_id):
+                if reply_id is None:
+                    abort(400, 'data messing')
+                else:
+                    user_reply = Replies.query.get(reply_id)
+                    comment_id = user_reply.comment_id
+                    user_reply.delete()
+                    # decrement replies count on the card
+                    user_comment = Comments.query.get(comment_id)
+                    user_comment.replies_count -= 1
+                    user_comment.update()
+                    return jsonify({
+                        'success': True,
+                        'message': 'reply deleted successfully'
+                    })
+            else:
+                abort(401)
+
+        except Exception as e:
+            abort(422)
 
     # ----------------------------------------------------------------------------#
     # Error Handlers.
