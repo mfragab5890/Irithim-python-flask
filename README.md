@@ -22,7 +22,7 @@ Once we have your virtual environment setup and running, install dependencies by
 pip install -r requirements.txt
 ```
 
-This will install all of the required packag
+This will install all of the required packages
 ##### Key Dependencies
 
 - [Flask](http://flask.pocoo.org/)  is a lightweight backend microservices framework. Flask is required to handle requests and responses.
@@ -77,7 +77,7 @@ Setting the `FLASK_APP` variable to `app` directs flask to use the `app.py`.
   - delete an unconfirmed user which will be deleted from the unconfirmed users table.
   - change role of a confirmed user from member to admin or vice versa.
 ### Users:
-- there are two types of users confirmed or un confirmed.
+- there are two types of users confirmed or unconfirmed.
 - there are two roles for users and each role has it's permissions as follows:
   - Admin:
     - List:
@@ -115,8 +115,16 @@ Setting the `FLASK_APP` variable to `app` directs flask to use the `app.py`.
 - user log in.
 - user id and a JWT token containing user permissions is stored in session.
 - user can do CRUD actions according to the permissions granted to him.
-## Test:
+## Tests:
+### unit test:
+- exit the server but postgres running
 - run `src\unit_test\unit_test.py`
+- Note: multiple runs will require updating some data specially post user as user email and user name should be unique also any delete as running once will delete the required entity.
+### Postman
+- Go to url `https://web.postman.co/`
+- login and open workspace
+- upload Irithm-python-flask collection
+- test each endpoint with each role but keep in mind to login to add user token to session.
 ## API References
 
 ### Getting Started
