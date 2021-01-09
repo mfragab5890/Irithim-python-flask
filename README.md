@@ -143,7 +143,7 @@ Errors are returned as JSON objects in the following format:
     "message": "Bad Request!!!! Please make sure the data you entered is correct"
 }
 ```
-The API will return three error types when requests fail:
+The API will return error types when requests fail, example:
 ```bash
 400: Bad Request
 404: Resource Not Found

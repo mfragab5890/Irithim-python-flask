@@ -1,5 +1,5 @@
 import jwt
-
+from .models.models import *
 
 # get_permissions
 def get_permissions(user_id):
@@ -15,7 +15,7 @@ def get_permissions(user_id):
         # get all cards on user lists or cards he created
         all_user_cards = db.session.query(User) \
             .join(Cards) \
-            .filter(Cards.list_id.in_(user_owned_lists) | Cards.creator_id == user_id) \
+            .filter(Cards.list_id.in_(user_owned_lists), Cards.creator_id == user_id) \
             .with_entities(Cards.id) \
             .all()
 

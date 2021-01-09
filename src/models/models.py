@@ -169,7 +169,7 @@ class List(db.Model):
         return {
             'id': self.id,
             'title': self.title,
-            'creator_id': self.creator_id,
+            'creator_id': self.creator_id
         }
 
 

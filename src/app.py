@@ -1,10 +1,8 @@
 # ----------------------------------------------------------------------------#
 # Imports
 # ----------------------------------------------------------------------------#
-import os
-from flask import Flask, render_template, request, Response, flash, redirect, url_for, jsonify, abort, session
+from flask import Flask, request, jsonify, abort, session
 from flask_cors import CORS
-from .models.models import *
 from .auth import *
 
 
@@ -38,9 +36,16 @@ def create_app(test_config=None):
         owner.role = 'owner'
         name = owner.user_name
         owner.update()
-        users = Owner.query.all()
-        user = [ user.format() for user in users ]
-        return name
+        query_user = User.query.get(1)
+        user = query_user.format()
+        query_lists = List.query.all()
+        lists_ids = [lst.format() for lst in query_lists]
+
+        lists_query = db.session.query(Cards).join(List) \
+            .filter(Cards.list_id == 1).order_by(db.desc(Cards.id)).all()
+        user_list = [lst.id for lst in lists_query]
+        print(lists_query)
+        return jsonify(user_list)
 
     # ----------------------------------------------------------------------------#
     # owner end points.
@@ -55,7 +60,7 @@ def create_app(test_config=None):
             if verify is not None:
                 unconfirmed_users = User_unconfirmed.query.all()
                 users = [ user.format() for user in unconfirmed_users ]
-                return users
+                return jsonify(users)
             else:
                 abort(401)
         else:
@@ -144,7 +149,7 @@ def create_app(test_config=None):
         new_email = body.get('email', None)
         new_role = body.get('role', False)
         if new_role:
-            new_role=True
+            new_role = True
         new_password = body.get('password', None)
         try:
             if new_user_name is None or new_email is None or new_password is None:
@@ -185,14 +190,14 @@ def create_app(test_config=None):
                     .with_entities(User.id, User.user_name, User.email, User.role) \
                     .paginate(page, results_per_page, False).items
                 users = [ user.format() for user in users_query ]
-                return users
+                return jsonify(users)
             else:
                 page = 1
                 users_query = User.query \
                     .with_entities(User.id, User.user_name, User.email, User.role) \
                     .paginate(page, results_per_page, False).items
                 users = [ user.format() for user in users_query ]
-                return users
+                return jsonify(users)
 
         else:
             abort(401)
@@ -226,94 +231,381 @@ def create_app(test_config=None):
     # permission: get_all_lists
     @app.route('/lists/<int:page>', methods=[ 'GET' ])
     def get_lists_paginated(page):
-        pass
+        if check_permissions(session[ 'token' ], 'get_all_lists', session[ 'user_id' ]):
+            if page:
+                lists_query = List.query.paginate(page, results_per_page, False).items
+                lists = [ lst.format() for lst in lists_query ]
+                return jsonify(lists)
+            else:
+                page = 1
+                lists_query = List.query.paginate(page, results_per_page, False).items
+                lists = [ lst.format() for lst in lists_query ]
+                return jsonify(lists)
+        else:
+            abort(401)
 
     # get list by id with cards in it paginated endpoint.
     # this endpoint should take list id and page number
     # permission: get_list
     @app.route('/list', methods=[ 'GET' ])
     def get_list():
-        pass
+        body = request.get_json()
+        list_id = body.get('list_id', None)
+        page = body.get('page', None)
+        if not list_id:
+            abort(400)
+        if check_permissions(session[ 'token' ], 'get_all_lists', list_id):
+            if page:
+                query_list = List.query.get(list_id)
+                user_list = query_list.format()
+                list_cards = db.session.query(Cards).join(List) \
+                    .filter(List.id == list_id) \
+                    .paginate(page, results_per_page, False).items
+                cards = [crd.format() for crd in list_cards]
+                return jsonify({
+                    'list':user_list,
+                    'cards':cards
+                })
+            else:
+                query_list = List.query.get(list_id)
+                user_list = query_list.format()
+                list_cards = db.session.query(Cards).join(List) \
+                    .filter(List.id == list_id) \
+                    .paginate(page, results_per_page, False).items
+                cards = [ crd.format() for crd in list_cards ]
+                return jsonify({
+                    'list': user_list,
+                    'cards': cards
+                })
+        else:
+            abort(401)
 
     # create list endpoint.
     # this end point should take title, creator_id
     # permission: create_list
     @app.route('/list', methods=[ 'POST' ])
     def create_list():
-        pass
+        body = request.get_json()
+
+        new_title = body.get('title', None)
+        new_creator_id = body.get('creator_id', None)
+        try:
+            if check_permissions(session[ 'token' ], 'create_list', session[ 'user_id' ]):
+                if new_title is None or new_creator_id is None:
+                    abort(400, 'data messing')
+                else:
+                    new_list = List(title=new_title, creator_id=new_creator_id)
+                    new_list.insert()
+                    # get new list id
+                    user_list = List.query \
+                        .filter(List.title == new_title, List.creator_id == new_creator_id) \
+                        .order_by(db.desc(List.id)).first()
+                    user_list_id = user_list.id
+                    # add to assign user to list in users_lists table
+                    user_id = session[ 'user_id' ]
+                    new_user_list = UserLists(user_id=user_id, list_id=user_list_id)
+                    new_user_list.insert()
+                    return jsonify({
+                        'success': True,
+                        'message': 'list created successfully'
+                    })
+            else:
+                abort(401)
+
+        except Exception as e:
+            abort(422)
 
     # update list by id endpoint.
     # this endpoint should take list id and title
     # permission: update_list
     @app.route('/list', methods=[ 'PATCH' ])
     def update_list():
-        pass
+        body = request.get_json()
+
+        new_title = body.get('title', None)
+        list_id = body.get('list_id', None)
+        try:
+            if check_permissions(session[ 'token' ], 'update_list', list_id):
+                if new_title is None or list_id is None:
+                    abort(400, 'data messing')
+                else:
+                    user_list = List.query.get(list_id)
+                    user_list.title = new_title
+                    user_list.update()
+
+                    return jsonify({
+                        'success': True,
+                        'message': 'list updated successfully'
+                    })
+            else:
+                abort(401)
+
+        except Exception as e:
+            abort(422)
 
     # delete list endpoint.
     # permission: delete_list
     @app.route('/list/<int:list_id>', methods=[ 'DELETE' ])
     def delete_list(list_id):
-        pass
+        try:
+            if check_permissions(session[ 'token' ], 'delete_list', list_id):
+                if list_id is None:
+                    abort(400, 'data messing')
+                else:
+                    user_list = List.query.get(list_id)
+                    user_list.delete()
+
+                    return jsonify({
+                        'success': True,
+                        'message': 'list deleted successfully'
+                    })
+            else:
+                abort(401)
+
+        except Exception as e:
+            abort(422)
 
     # assign member to list by user id and list id endpoint.
     # this endpoint should take list_id and user_id
     # permission: assign_member_list
     @app.route('/assignation', methods=[ 'POST' ])
     def assign_member():
-        pass
+        body = request.get_json()
+
+        user_list_id = body.get('list_id', None)
+        user_id = body.get('user_id', None)
+        try:
+            if check_permissions(session[ 'token' ], 'assign_member_list', user_list_id):
+                if user_id is None or user_list_id is None:
+                    abort(400, 'data messing')
+                else:
+                    new_user_list = UserLists(user_id=user_id, list_id=user_list_id)
+                    new_user_list.insert()
+
+                    return jsonify({
+                        'success': True,
+                        'message': 'member assigned successfully'
+                    })
+            else:
+                abort(401)
+
+        except Exception as e:
+            abort(422)
 
     # unassign member to list by user id and list id endpoint.
     # this endpoint should take list_id and user_id
     # permission: revoke_member_list
     @app.route('/revocation', methods=[ 'DELETE' ])
     def revoke_member():
-        pass
+        body = request.get_json()
+
+        user_list_id = body.get('list_id', None)
+        user_id = body.get('user_id', None)
+        try:
+            if check_permissions(session[ 'token' ], 'revoke_member_list', user_list_id):
+                if user_id is None or user_list_id is None:
+                    abort(400, 'data messing')
+                else:
+                    user_list = UserLists.query.filter(UserLists.user_id == user_id, UserLists.list_id == user_list_id)
+                    user_list.delete()
+
+                    return jsonify({
+                        'success': True,
+                        'message': 'member assigned successfully'
+                    })
+            else:
+                abort(401)
+
+        except Exception as e:
+            abort(422)
 
     # get all cards ordered by comments count descending and paginated endpoint.
     # permission: get_card
     @app.route('/cards/<int:page>', methods=[ 'GET' ])
     def get_cards(page):
-        pass
+        if check_permissions(session[ 'token' ], 'get_card', session[ 'user_id' ]):
+            if page:
+                cards_query = Cards.query.order_by('comments_count').paginate(page, results_per_page, False).items
+                cards = [ crd.format() for crd in cards_query ]
+                return jsonify(cards)
+            else:
+                page = 1
+                cards_query = Cards.query.order_by('comments_count').paginate(page, results_per_page, False).items
+                cards = [ crd.format() for crd in cards_query ]
+                return jsonify(cards)
+        else:
+            abort(401)
 
     # get card by id with first three comments endpoint.
     # permission: get_card
     @app.route('/card/<int:card_id>', methods=[ 'GET' ])
     def get_card(card_id):
-        pass
+
+        if check_permissions(session[ 'token' ], 'get_card', card_id):
+            if card_id:
+                cards_query = Cards.query.get(card_id)
+                user_card = cards_query.format()
+                comments_query = Comments.query.filter(Comments.card_id == card_id).limit(3).all()
+                card_comments = [ cmnt.format() for cmnt in comments_query ]
+                return jsonify({
+                    'card': user_card,
+                    'comments': card_comments
+                })
+            else:
+                abort(400, 'data messing')
+        else:
+            abort(401)
 
     # create card endpoint.
     # this endpoint should take title, description, comments_count=0, list_id, creator_id
     # permission: create_card
     @app.route('/card', methods=[ 'POST' ])
     def create_card():
-        pass
+        body = request.get_json()
+
+        new_title = body.get('title', None)
+        new_description = body.get('description', None)
+        new_comments_count = 0
+        new_creator_id = body.get('creator_id', None)
+        new_list_id = body.get('list_id', None)
+        try:
+            if check_permissions(session[ 'token' ], 'create_card', new_list_id):
+                if new_title is None or new_creator_id is None or new_description is None or new_list_id is None:
+                    abort(400, 'data messing')
+                else:
+                    new_card = Cards(
+                        title=new_title,
+                        description=new_description,
+                        comments_count=new_comments_count,
+                        creator_id=new_creator_id,
+                        list_id=new_list_id,
+                    )
+                    new_card.insert()
+
+                    return jsonify({
+                        'success': True,
+                        'message': 'card created successfully'
+                    })
+            else:
+                abort(401)
+
+        except Exception as e:
+            abort(422)
 
     # update card by card id endpoint.
     # this end point should take card id and at least one of title or description
     # permission: update_card
-    @app.route('/card/', methods=[ 'PATCH' ])
+    @app.route('/card', methods=[ 'PATCH' ])
     def update_card():
-        pass
+        body = request.get_json()
+
+        new_title = body.get('title', None)
+        new_description = body.get('description', None)
+        card_id = body.get('card_id', None)
+        try:
+            if check_permissions(session[ 'token' ], 'update_card', card_id):
+                if new_title is None and new_description is None:
+                    abort(400, 'data messing')
+                else:
+                    user_card = Cards.query.get(card_id)
+                    if new_title:
+                        user_card.title = new_title
+                    elif new_description:
+                        user_card.description = new_description
+                    user_card.update()
+
+                    return jsonify({
+                        'success': True,
+                        'message': 'card updated successfully'
+                    })
+            else:
+                abort(401)
+
+        except Exception as e:
+            abort(422)
 
     # delete card by card id endpoint.
     # permission: delete_card
     @app.route('/card/<int:card_id>', methods=[ 'DELETE' ])
     def delete_card(card_id):
-        pass
+        try:
+            if not session['token']:
+                abort(401,'please login first')
+            if check_permissions(session[ 'token' ], 'delete_card', card_id):
+                if card_id is None:
+                    abort(400, 'data messing')
+                else:
+                    user_card = List.query.get(card_id)
+                    user_card.delete()
+
+                    return jsonify({
+                        'success': True,
+                        'message': 'card deleted successfully'
+                    })
+            else:
+                abort(401)
+
+        except Exception as e:
+            abort(422)
 
     # get all comments on a card ordered by id and paginated endpoint.
     # this should receive card id and page number
     # permission: get_comment
     @app.route('/card/comments/', methods=[ 'GET' ])
     def get_card_comments():
-        pass
+        body = request.get_json()
+
+        user_card_id = body.get('card_id', None)
+        page = body.get('page', None)
+        if user_card_id is None:
+            abort(400, 'data messing')
+        if check_permissions(session[ 'token' ], 'get_comment', user_card_id):
+            if page:
+                comments_query = Comments.query.order_by('id').paginate(page, results_per_page, False).items
+                comments = [ cmnt.format() for cmnt in comments_query ]
+                return jsonify(comments)
+            else:
+                page = 1
+                comments_query = Comments.query.order_by('id').paginate(page, results_per_page, False).items
+                comments = [ cmnt.format() for cmnt in comments_query ]
+                return jsonify(comments)
+        else:
+            abort(401)
 
     # get comment by id with all replies and replies paginated endpoint.
     # this should receive comment id and page number
     # permission: get_comment
     @app.route('/comment/replies', methods=[ 'GET' ])
     def get_comment_replies():
-        pass
+        body = request.get_json()
+
+        user_comment_id = body.get('comment_id', None)
+        page = body.get('page', None)
+        if user_comment_id is None:
+            abort(400, 'data messing')
+        if check_permissions(session[ 'token' ], 'get_comment', user_comment_id):
+            if page:
+                comment_query = Comments.query.get(user_comment_id)
+                user_comment = comment_query.format()
+                replies_query = Replies.query.order_by('id').paginate(page, results_per_page, False).items
+                comment_replies = [ reply.format() for reply in replies_query ]
+                return jsonify({
+                    'comment': user_comment,
+                    'replies': comment_replies
+                })
+            else:
+                page = 1
+                comment_query = Comments.query.get(user_comment_id)
+                user_comment = comment_query.format()
+                replies_query = Replies.query.order_by('id').paginate(page, results_per_page, False).items
+                comment_replies = [ reply.format() for reply in replies_query ]
+                data = user_comment + comment_replies
+                return jsonify({
+                    'comment': user_comment,
+                    'replies': comment_replies
+                })
+        else:
+            abort(401)
 
     # create comment on card with card id endpoint.
     # this endpoint should add 1 to comments_count in card table
