@@ -275,7 +275,7 @@ Returns an object with success and custom message
 
 - Function: get all comments on a card ordered by id and paginated endpoint
 - Requested Arguments: permission to get_comment, card id and page number
-- Returns an object with 
+- Returns an object with card and comments
 
 ##### GET '/comment/replies'
 
@@ -289,59 +289,33 @@ Returns an object with success and custom message
 - Requested Arguments: permission to create_comment, content, card_id and creator_id
 - Returns an object with success and custom message
 
-# update comment endpoint.
-# this endpoint should take id and content
-# permission: update_comment
-@app.route('/comment', methods=[ 'PATCH' ])
-##### GET '/'
+##### PATCH '/comment'
 
-#### Function:
-#### Requested Arguments:
-#### Response body:
-##### Returns an object with 
+- Function: update comment by id
+- Requested Arguments: permission to update_comment, id and content
+- Returns an object with success and custom message
 
-# delete comment endpoint.
-# this endpoint should subtract 1 to comments_count in card table
-# permission: delete_comment
-@app.route('/comment/<int:comment_id>', methods=[ 'DELETE' ])
-##### GET '/'
+##### DELETE '/comment/<int:comment_id>'
 
-#### Function:
-#### Requested Arguments:
-#### Response body:
-##### Returns an object with 
+- Function: delete comment and decrement comments_count in card table
+- Requested Arguments: permission to delete_comment, comment_id
+- Returns an object with success and custom message
 
-# create reply endpoint.
-# this endpoint should add 1 to replies_count in comments table
-# this endpoint should take content, comment_id and creator_id
-# permission: create_replies
-@app.route('/reply', methods=[ 'POST' ])
-##### GET '/'
+##### POST '/reply'
 
-#### Function:
-#### Requested Arguments:
-#### Response body:
-##### Returns an object with 
+- Function: create reply and increment replies_count in comments table
+- Requested Arguments: permission to create_replies,content, comment_id and creator_id
+- Returns an object with success and custom message
 
-# update reply endpoint.
-# this endpoint should take reply id and content
-# permission: update_replies
-@app.route('/reply', methods=[ 'PATCH' ])
-##### GET '/'
+##### PATCH '/reply'
 
-#### Function:
-#### Requested Arguments:
-#### Response body:
-##### Returns an object with 
+- Function: update reply by id
+- Requested Arguments: permission to update_replies,reply_id and content
+- Returns an object with success and custom message
 
-# delete reply endpoint.
-# this endpoint should subtract 1 to replies_count in comments table
-# permission: delete_replies
-@app.route('/reply/<int:reply_id>', methods=[ 'DELETE' ])
-##### GET '/'
+##### DELETE '/reply/<int:reply_id>'
 
-#### Function:
-#### Requested Arguments:
-#### Response body:
-##### Returns an object with 
+- Function: delete reply by id and decrement replies_count in comments table
+- Requested Arguments: # permission to delete_replies and reply_id
+- Returns an object with success and custom message
 
