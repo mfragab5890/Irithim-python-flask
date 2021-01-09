@@ -1,6 +1,7 @@
 import jwt
 from .models.models import *
 
+
 # get_permissions
 def get_permissions(user_id):
     # check role
@@ -10,42 +11,41 @@ def get_permissions(user_id):
     if role:
 
         # get all user created lists
-        user_owned_lists = List.query.with_entities(List.id).filter(List.creator_id == user_id).all()
+        user_owned_lists_query = List.query.filter(List.creator_id == user_id).all()
+        user_owned_lists = [ lst.id for lst in user_owned_lists_query ]
 
         # get all cards on user lists or cards he created
-        all_user_cards = db.session.query(User) \
-            .join(Cards) \
-            .filter(Cards.list_id.in_(user_owned_lists), Cards.creator_id == user_id) \
-            .with_entities(Cards.id) \
-            .all()
+        user_lists_cards_query = Cards.query.filter(Cards.list_id.in_(user_owned_lists)).all()
+        user_lists_cards = [ crd.id for crd in user_lists_cards_query ]
+        all_user_cards_query = Cards.query.filter(Cards.creator_id == user_id).all()
+        all_user_cards = [ crd.id for crd in all_user_cards_query ]
+        all_user_cards += user_lists_cards
 
         # get all user created comments or comments in his cards or cards in own lists
-        all_user_comments = db.session.query(User) \
-            .join(Comments) \
-            .filter(Comments.card_id.in_(all_user_cards) | Comments.creator_id == user_id) \
-            .with_entities(Comments.id) \
-            .all()
+        user_own_comments_query = Comments.query.filter(Comments.creator_id == user_id).all()
+        user_own_comments = [ cmnt.id for cmnt in user_own_comments_query ]
+        user_cards_comments_query = Comments.query.filter(Comments.card_id.in_(user_lists_cards)).all()
+        user_cards_comments = [ cmnt.id for cmnt in user_cards_comments_query ]
+        all_user_comments = user_own_comments + user_cards_comments
 
         # get all user created replies or replies in his cards or cards in own lists
-        all_user_replies = db.session.query(User) \
-            .join(Replies) \
-            .filter(Replies.comment_id.in_(all_user_comments) | Replies.creator_id == user_id) \
-            .with_entities(Replies.id) \
-            .all()
+        all_user_replies_query = Replies.query.filter(Replies.comment_id.in_(all_user_comments)).all()
+        all_user_replies = [ rply.id for rply in all_user_replies_query ]
 
+        print(all_user_cards[2])
         # create payload
         payload = {
             'user_id': user_id,
             'role': 'Admin',
             'permissions': {
-                'get_all_lists': {user_id},
-                'create_list': {user_id},
+                'get_all_lists': 'All',
+                'create_list': 'All',
                 'update_list': user_owned_lists,
                 'delete_list': user_owned_lists,
                 'get_list': 'All',
                 'assign_member_list': user_owned_lists,
                 'revoke_member_list': user_owned_lists,
-                'get_all_users': {user_id},
+                'get_all_users': 'All',
                 'create_card': 'All',
                 'update_card': all_user_cards,
                 'delete_card': all_user_cards,
@@ -61,7 +61,7 @@ def get_permissions(user_id):
 
             }
         }
-        secret = app.config[ 'SECRET_KEY' ]
+        secret = 'Irithm task is awesome'
         algo = "HS256"
 
         # encode a jwt
@@ -71,44 +71,28 @@ def get_permissions(user_id):
     # if role is False the user is a member
     else:
         # get all lists assigned to the user
-        user_assigned_lists = UserLists.query.with_entities(UserLists.list_id).filter(UserLists.user_id == user_id).all()
-
+        user_assigned_lists_query = UserLists.query.filter(UserLists.user_id == user_id).all()
+        user_assigned_lists = [lst.id for lst in user_assigned_lists_query]
         # get all cards on user lists and cards he created in his assigned lists
-        all_user_view_cards = db.session.query(User) \
-            .join(Cards) \
-            .filter(Cards.list_id.in_(user_assigned_lists)) \
-            .with_entities(Cards.id) \
-            .all()
+        all_user_view_cards_query = Cards.query.filter(Cards.list_id.in_(user_assigned_lists)).all()
+        all_user_view_cards = [crd.id for crd in all_user_view_cards_query]
 
-        all_user_created_cards = db.session.query(User) \
-            .join(Cards) \
-            .filter(Cards.list_id.in_(Cards.creator_id == user_id)) \
-            .with_entities(Cards.id) \
-            .all()
+        all_user_created_cards_query = Cards.query.filter(Cards.creator_id == user_id).all()
+        all_user_created_cards = [crd.id for crd in all_user_created_cards_query]
+
         # get all user created comments and comments in his cards  in assigned lists
-        all_user_view_comments = db.session.query(User) \
-            .join(Comments) \
-            .filter(Comments.card_id.in_(all_user_view_cards)) \
-            .with_entities(Comments.id) \
-            .all()
+        all_user_view_comments_query = Comments.query.filter(Comments.card_id.in_(all_user_view_cards)).all()
+        all_user_view_comments = [cmnt.id for cmnt in all_user_view_comments_query]
 
-        all_user_created_comments = db.session.query(User) \
-            .join(Comments) \
-            .filter(Comments.creator_id == user_id) \
-            .with_entities(Comments.id) \
-            .all()
+        all_user_created_comments_query = Comments.query.filter(Comments.creator_id == user_id).all()
+        all_user_created_comments = [cmnt.id for cmnt in all_user_created_comments_query]
+
         # get all user created replies or replies in his cards or cards in own lists
-        all_user_view_replies = db.session.query(User) \
-            .join(Replies) \
-            .filter(Replies.comment_id.in_(all_user_view_comments)) \
-            .with_entities(Replies.id) \
-            .all()
+        all_user_view_replies_query = Replies.filter(Replies.comment_id.in_(all_user_view_comments)).all()
+        all_user_view_replies = [rply.id for rply in all_user_view_replies_query]
 
-        all_user_created_replies = db.session.query(User) \
-            .join(Replies) \
-            .filter(Replies.creator_id == user_id) \
-            .with_entities(Replies.id) \
-            .all()
+        all_user_created_replies_query = Replies.query.filter(Replies.creator_id == user_id).all()
+        all_user_created_replies = [ rply.id for rply in all_user_created_replies_query ]
 
         # create payload
         payload = {
@@ -138,7 +122,7 @@ def get_permissions(user_id):
 
             }
         }
-        secret = app.config[ 'SECRET_KEY' ]
+        secret = 'Irithm task is awesome'
         algo = "HS256"
 
         # encode a jwt
@@ -149,13 +133,14 @@ def get_permissions(user_id):
 # check_permissions
 def check_permissions(token, permission, entity_id):
     # Decode a JWT
-    secret = app.config[ 'SECRET_KEY' ]
-    payload = jwt.decode(token, secret, verify=True)
-    if permission in payload:
-        if payload.permission:
-            if payload.permission == 'All':
+    secret = 'Irithm task is awesome'
+    algo = 'HS256'
+    payload = jwt.decode(token, secret, algorithms=algo, verify=True)
+    if 'permissions' in payload:
+        if payload['permissions'][permission]:
+            if str(entity_id) in payload['permissions'][permission]:
                 return True
-            elif entity_id in payload.permission:
+            elif payload['permissions'][permission] == 'All':
                 return True
             else:
                 raise AuthError({
