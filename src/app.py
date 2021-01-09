@@ -587,7 +587,7 @@ def create_app(test_config=None):
 
     # get comment by id with all replies and replies paginated endpoint.
     # this should receive comment id and page number
-    # permission: get_comment
+    # permission: get_replies
     @app.route('/comment/replies', methods=[ 'GET' ])
     def get_comment_replies():
         body = request.get_json()
@@ -596,7 +596,7 @@ def create_app(test_config=None):
         page = body.get('page', None)
         if user_comment_id is None:
             abort(400, 'data messing')
-        if check_permissions(session[ 'token' ], 'get_comment', user_comment_id):
+        if check_permissions(session[ 'token' ], 'get_replies', user_comment_id):
             if page:
                 comment_query = Comments.query.get(user_comment_id)
                 user_comment = comment_query.format()

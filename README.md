@@ -280,7 +280,7 @@ Returns an object with success and custom message
 ##### GET '/comment/replies'
 
 - Function: get comment by id with all replies and replies paginated
-- Requested Arguments: permission to get_comment, comment id and page number.
+- Requested Arguments: permission to get_replies, comment id and page number.
 - Returns an object with comment and replies
 
 ##### POST '/comment'
