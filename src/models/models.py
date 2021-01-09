@@ -137,6 +137,13 @@ class User(db.Model):
             'password_hash': self.password_hash,
             'role': self.role
         }
+    def format_no_password(self):
+        return {
+            'id': self.id,
+            'user_name': self.user_name,
+            'email': self.email,
+            'role': self.role
+        }
 
 
 # Lists table
