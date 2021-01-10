@@ -294,7 +294,7 @@ class Comments(db.Model):
     def format(self):
         return {
             'id': self.id,
-            'content': self.title,
+            'content': self.content,
             'card_id': self.card_id,
             'replies_count': self.replies_count,
             'creator_id': self.creator_id
