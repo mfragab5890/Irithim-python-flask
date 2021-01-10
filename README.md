@@ -124,7 +124,7 @@ Setting the `FLASK_APP` variable to `app` directs flask to use the `app.py`.
 - Go to url `https://web.postman.co/`
 - login and open workspace
 - upload Irithm-python-flask collection from `/Irithm-python-flask.postman_collection.json`
-- test each endpoint with each role but keep in mind to login to add user token to session.
+- test each endpoint with each role but keep in mind to login with each role (Owner, Admin and Member) to add user token to session.
 ## API References
 
 ### Getting Started

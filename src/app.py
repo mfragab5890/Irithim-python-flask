@@ -326,22 +326,28 @@ def create_app(test_config=None):
         body = request.get_json()
 
         new_title = body.get('title', None)
-        new_creator_id = body.get('creator_id', None)
-        try:
-            # check if user logged in and has permission
-            token = 0
-            logged_user_id = 0
-            if 'token' in session:
-                token = session[ 'token' ]
-            elif 'user_id' in session:
-                logged_user_id = session[ 'user_id' ]
+        new_creator_id = 0
+        if 'user_id' in session:
+            new_creator_id = session['user_id']
+        else:
+            abort(401)
+
+        # check if user logged in and has permission
+        token = 0
+        logged_user_id = 0
+        if 'token' in session:
+            token = session[ 'token' ]
+        elif 'user_id' in session:
+            logged_user_id = session[ 'user_id' ]
+        else:
+            abort(401)
+        if check_permissions(token, 'create_list', logged_user_id):
+            if new_title is None or new_creator_id is None:
+                abort(400, 'data messing')
             else:
-                abort(401)
-            if check_permissions(token, 'create_list', logged_user_id):
-                if new_title is None or new_creator_id is None:
-                    abort(400, 'data messing')
-                else:
-                    new_list = List(title=new_title, creator_id=new_creator_id)
+                new_list = List(title=new_title, creator_id=new_creator_id)
+
+                try:
                     new_list.insert()
                     # get new list id
                     user_list = List.query \
@@ -352,15 +358,17 @@ def create_app(test_config=None):
                     user_id = session[ 'user_id' ]
                     new_user_list = UserLists(user_id=user_id, list_id=user_list_id)
                     new_user_list.insert()
+
                     return jsonify({
                         'success': True,
                         'message': 'list created successfully'
                     })
-            else:
-                abort(401)
+                except Exception as e:
+                    abort(422)
+        else:
+            abort(401)
 
-        except Exception as e:
-            abort(422)
+
 
     # update list by id endpoint.
     # this endpoint should take list id and title
@@ -514,7 +522,7 @@ def create_app(test_config=None):
         token = 0
         if 'token' in session:
             token = session[ 'token' ]
-            logged_user_id = session[ 'token' ]
+            logged_user_id = session[ 'user_id' ]
         else:
             abort(401)
         if check_permissions(token, 'get_card', logged_user_id):
@@ -569,8 +577,12 @@ def create_app(test_config=None):
         new_title = body.get('title', None)
         new_description = body.get('description', None)
         new_comments_count = 0
-        new_creator_id = body.get('creator_id', None)
         new_list_id = body.get('list_id', None)
+        new_creator_id = 0
+        if 'user_id' in session:
+            new_creator_id = session[ 'user_id' ]
+        else:
+            abort(401)
 
         # check if user logged in and has permission
         token = 0
@@ -757,11 +769,15 @@ def create_app(test_config=None):
         new_content = body.get('content', None)
         new_card_id = body.get('card_id', None)
         new_replies_count = 0
-        new_creator_id = body.get('creator_id', None)
+        new_creator_id = 0
         # check if user logged in and has permission
         token = 0
         if 'token' in session:
             token = session[ 'token' ]
+        else:
+            abort(401)
+        if 'user_id' in session:
+            new_creator_id = session['user_id']
         else:
             abort(401)
 
@@ -873,7 +889,11 @@ def create_app(test_config=None):
 
         new_content = body.get('content', None)
         new_comment_id = body.get('comment_id', None)
-        new_creator_id = body.get('creator_id', None)
+        new_creator_id = 0
+        if 'user_id' in session:
+            new_creator_id = session['user_id']
+        else:
+            abort(401)
 
         # check if user logged in and has permission
         token = 0
@@ -904,6 +924,7 @@ def create_app(test_config=None):
                         'message': 'reply created successfully'
                     })
                 except Exception as e:
+                    print(e)
                     abort(422)
         else:
             abort(401)

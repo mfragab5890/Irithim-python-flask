@@ -71,7 +71,7 @@ def get_permissions(user_id):
     else:
         # get all lists assigned to the user
         user_assigned_lists_query = UserLists.query.filter(UserLists.user_id == user_id).all()
-        user_assigned_lists = [str(lst.id) for lst in user_assigned_lists_query]
+        user_assigned_lists = [str(lst.list_id) for lst in user_assigned_lists_query]
         # get all cards on user lists and cards he created in his assigned lists
         all_user_view_cards_query = Cards.query.filter(Cards.list_id.in_(user_assigned_lists)).all()
         all_user_view_cards = [str(crd.id) for crd in all_user_view_cards_query]
@@ -123,7 +123,6 @@ def get_permissions(user_id):
         }
         secret = 'Irithm task is awesome'
         algo = "HS256"
-
         # encode a jwt
         encoded_jwt = jwt.encode(payload, secret, algorithm=algo)
         return encoded_jwt
@@ -137,9 +136,9 @@ def check_permissions(token, permission, entity_id):
     payload = jwt.decode(token, secret, algorithms=algo, verify=True)
     if 'permissions' in payload:
         if payload['permissions'][permission]:
-            if str(entity_id) in payload['permissions'][permission]:
+            if payload['permissions'][permission] == 'All':
                 return True
-            elif payload['permissions'][permission] == 'All':
+            elif str(entity_id) in payload['permissions'][permission]:
                 return True
             else:
                 raise AuthError({
