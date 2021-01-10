@@ -52,6 +52,17 @@ class IrithmTestCase(unittest.TestCase):
             'password': 'djbvjshvhzxjvhzxmbv,zxb',
             'role': True
         }
+        self.login_user_false = {
+            "email": "m.f.ragab5890@gmail.com",
+            "password": "tafTAFI",
+            "user_name": "mostafa_ragab"
+        }
+        self.login_user_true = {
+            "email": "m.f.ragab5890@gmail.com",
+            "password": "tafiTAFI",
+            "user_name": "mostafa_ragab"
+        }
+        self.token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiQWRtaW4iLCJwZXJtaXNzaW9ucyI6eyJnZXRfYWxsX2xpc3RzIjoiQWxsIiwiY3JlYXRlX2xpc3QiOiJBbGwiLCJ1cGRhdGVfbGlzdCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZGVsZXRlX2xpc3QiOlsxLDIsMyw0LDUsNiw3LDgsOSwxMF0sImdldF9saXN0IjoiQWxsIiwiYXNzaWduX21lbWJlcl9saXN0IjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJyZXZva2VfbWVtYmVyX2xpc3QiOlsxLDIsMyw0LDUsNiw3LDgsOSwxMF0sImdldF9hbGxfdXNlcnMiOiJBbGwiLCJjcmVhdGVfY2FyZCI6IkFsbCIsInVwZGF0ZV9jYXJkIjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfY2FyZCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X2NhcmQiOiJBbGwiLCJjcmVhdGVfY29tbWVudCI6IkFsbCIsInVwZGF0ZV9jb21tZW50IjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfY29tbWVudCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X2NvbW1lbnQiOiJBbGwiLCJjcmVhdGVfcmVwbGllcyI6IkFsbCIsInVwZGF0ZV9yZXBsaWVzIjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfcmVwbGllcyI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X3JlcGxpZXMiOiJBbGwifX0.SPGXta7MX1hDVmi2jOXR33pexRc7M9GJ9cWEZLGKQn8'
 
         # binds the app to the current context
         with self.app.app_context():
@@ -67,7 +78,7 @@ class IrithmTestCase(unittest.TestCase):
     # test add a new user to database
     def test_register_user(self):
         """Test if when registering a user it will be added successfully """
-        res = self.client().post('/register', json=self.new_user_1)
+        res = self.client().post('/register', json=self.new_user_6)
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -95,6 +106,40 @@ class IrithmTestCase(unittest.TestCase):
         self.assertEqual(data[ 'success' ], False)
         self.assertEqual(data[ 'message' ],
                          'Unprocessable!!! : The request was well-formed but was unable to be followed')
+
+    # test error while logging in with false credetials
+    def test_error_user_login(self):
+        """Test if error will occur on user submit wrong credentials upon login """
+        res = self.client().post('/login', json=self.login_user_false)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(data[ 'success' ], False)
+        self.assertEqual(data[ 'message' ], 'Unauthorized.')
+
+    # test login with right credentials will succeed
+    def test_user_login(self):
+        """Test right credentials upon login will give access to the user """
+        res = self.client().post('/login', json=self.login_user_true)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data[ 'success' ], True)
+        self.assertEqual(data[ 'message' ], 'logged in successfully')
+
+    # test get unconfirmed users from database
+    def test_get_unconfirmed_users(self):
+        """Test query unconfirmed users will return results """
+        with self.app.test_client() as tclient:
+            with tclient.session_transaction() as sess:
+                sess[ 'token' ] = self.token
+                sess['user_id'] = 1
+        res = self.client().get('/unconfirmed')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data)
+
 
 
 # Make the tests conveniently executable
