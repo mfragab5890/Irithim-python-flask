@@ -300,7 +300,7 @@ Returns an object with success and custom message
 ##### PATCH '/comment'
 
 - Function: update comment by id
-- Requested Arguments: permission to update_comment, id and content
+- Requested Arguments: permission to update_comment, comment_id and content
 - Returns an object with success and custom message
 
 ##### DELETE '/comment/<int:comment_id>'
