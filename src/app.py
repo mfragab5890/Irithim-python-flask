@@ -7,9 +7,7 @@ from .auth import *
 
 
 # creating and initializing the app.
-
-
-def create_app(test_config=None):
+def create_app():
     # ----------------------------------------------------------------------------#
     # App Config.
     # ----------------------------------------------------------------------------#
@@ -25,7 +23,8 @@ def create_app(test_config=None):
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
         response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
         return response
-
+    #enable testing
+    app.testing = True
     # variable for pagination to show results per page
     results_per_page = 3
 
@@ -42,7 +41,7 @@ def create_app(test_config=None):
             if verify is not None:
                 unconfirmed_users = User_unconfirmed.query.all()
                 users = [ user.format() for user in unconfirmed_users ]
-                return jsonify(users)
+                return jsonify({'users': users})
             else:
                 abort(401)
         else:
@@ -222,12 +221,12 @@ def create_app(test_config=None):
             if page:
                 users_query = User.query.paginate(page, results_per_page, False).items
                 users = [ user.format_no_password() for user in users_query ]
-                return jsonify(users)
+                return jsonify({'users': users})
             else:
                 page = 1
                 users_query = User.query.paginate(page, results_per_page, False).items
                 users = [ user.format_no_password() for user in users_query ]
-                return jsonify(users)
+                return jsonify({'users': users})
 
         else:
             abort(401)
@@ -280,12 +279,12 @@ def create_app(test_config=None):
             if page:
                 lists_query = List.query.paginate(page, results_per_page, False).items
                 lists = [ lst.format() for lst in lists_query ]
-                return jsonify(lists)
+                return jsonify({'lists': lists})
             else:
                 page = 1
                 lists_query = List.query.paginate(page, results_per_page, False).items
                 lists = [ lst.format() for lst in lists_query ]
-                return jsonify(lists)
+                return jsonify({'lists': lists})
         else:
             abort(401)
 
@@ -328,7 +327,7 @@ def create_app(test_config=None):
         new_title = body.get('title', None)
         new_creator_id = 0
         if 'user_id' in session:
-            new_creator_id = session['user_id']
+            new_creator_id = session[ 'user_id' ]
         else:
             abort(401)
 
@@ -367,8 +366,6 @@ def create_app(test_config=None):
                     abort(422)
         else:
             abort(401)
-
-
 
     # update list by id endpoint.
     # this endpoint should take list id and title
@@ -530,13 +527,13 @@ def create_app(test_config=None):
                 cards_query = Cards.query.order_by(db.desc(Cards.comments_count)).paginate(page, results_per_page,
                                                                                            False).items
                 cards = [ crd.format() for crd in cards_query ]
-                return jsonify(cards)
+                return jsonify({'cards': cards})
             else:
                 page = 1
                 cards_query = Cards.query.order_by(db.desc(Cards.comments_count)).paginate(page, results_per_page,
                                                                                            False).items
                 cards = [ crd.format() for crd in cards_query ]
-                return jsonify(cards)
+                return jsonify({'cards': cards})
         else:
             abort(401)
 
@@ -707,12 +704,12 @@ def create_app(test_config=None):
             if page:
                 comments_query = Comments.query.order_by('id').paginate(page, results_per_page, False).items
                 comments = [ cmnt.format() for cmnt in comments_query ]
-                return jsonify(comments)
+                return jsonify({'comments': comments})
             else:
                 page = 1
                 comments_query = Comments.query.order_by('id').paginate(page, results_per_page, False).items
                 comments = [ cmnt.format() for cmnt in comments_query ]
-                return jsonify(comments)
+                return jsonify({'comments': comments})
         else:
             abort(401)
 
@@ -777,7 +774,7 @@ def create_app(test_config=None):
         else:
             abort(401)
         if 'user_id' in session:
-            new_creator_id = session['user_id']
+            new_creator_id = session[ 'user_id' ]
         else:
             abort(401)
 
@@ -891,7 +888,7 @@ def create_app(test_config=None):
         new_comment_id = body.get('comment_id', None)
         new_creator_id = 0
         if 'user_id' in session:
-            new_creator_id = session['user_id']
+            new_creator_id = session[ 'user_id' ]
         else:
             abort(401)
 
@@ -1051,7 +1048,7 @@ def create_app(test_config=None):
         return jsonify({
             "success": False,
             "error": 401,
-            "message": 'Unauthorized. '
+            "message": 'Unauthorized.'
         }), 401
 
     @app.errorhandler(403)
