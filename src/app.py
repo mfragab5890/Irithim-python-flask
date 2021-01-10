@@ -504,12 +504,12 @@ def create_app(test_config=None):
             abort(401)
         if check_permissions(token, 'get_card', logged_user_id):
             if page:
-                cards_query = Cards.query.order_by('comments_count').paginate(page, results_per_page, False).items
+                cards_query = Cards.query.order_by(db.desc(Cards.comments_count)).paginate(page, results_per_page, False).items
                 cards = [ crd.format() for crd in cards_query ]
                 return jsonify(cards)
             else:
                 page = 1
-                cards_query = Cards.query.order_by('comments_count').paginate(page, results_per_page, False).items
+                cards_query = Cards.query.order_by(db.desc(Cards.comments_count)).paginate(page, results_per_page, False).items
                 cards = [ crd.format() for crd in cards_query ]
                 return jsonify(cards)
         else:
@@ -798,7 +798,7 @@ def create_app(test_config=None):
             else:
                 user_comment = Comments.query.get(comment_id)
                 if new_content:
-                    user_comment.title = new_content
+                    user_comment.content = new_content
                 try:
 
                     user_comment.update()
