@@ -216,7 +216,7 @@ The API will return error types when requests fail, example:
 ##### GET '/list'
 
 - Function: get list by id with cards in it
-- Requested Arguments: permission to get_list and list id
+- Requested Arguments: permission to get_list and list_id
 - Returns an object with list and cards
 
 ##### POST '/list'
