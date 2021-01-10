@@ -138,7 +138,7 @@ def create_app(test_config=None):
                 user = User.query.get(user_id)
                 if user:
                     if body:
-                        role = body.get('role',None)
+                        role = body.get('role', None)
                         if role:
                             user.role = True
                         elif not role:
@@ -214,7 +214,7 @@ def create_app(test_config=None):
         logged_user_id = 0
         if 'token' in session:
             token = session[ 'token' ]
-        elif 'token' in session:
+        elif 'user_id' in session:
             logged_user_id = session[ 'user_id' ]
         else:
             abort(401)
@@ -272,7 +272,7 @@ def create_app(test_config=None):
         logged_user_id = 0
         if 'token' in session:
             token = session[ 'token' ]
-        elif 'token' in session:
+        elif 'user_id' in session:
             logged_user_id = session[ 'user_id' ]
         else:
             abort(401)
@@ -304,7 +304,7 @@ def create_app(test_config=None):
             logged_user_id = 0
             if 'token' in session:
                 token = session[ 'token' ]
-            elif 'token' in session:
+            elif 'user_id' in session:
                 logged_user_id = session[ 'user_id' ]
             else:
                 abort(401)
@@ -333,7 +333,7 @@ def create_app(test_config=None):
             logged_user_id = 0
             if 'token' in session:
                 token = session[ 'token' ]
-            elif 'token' in session:
+            elif 'user_id' in session:
                 logged_user_id = session[ 'user_id' ]
             else:
                 abort(401)
@@ -371,46 +371,62 @@ def create_app(test_config=None):
 
         new_title = body.get('title', None)
         list_id = body.get('list_id', None)
-        try:
-            if check_permissions(session[ 'token' ], 'update_list', list_id):
-                if new_title is None or list_id is None:
-                    abort(400, 'data messing')
-                else:
-                    user_list = List.query.get(list_id)
-                    user_list.title = new_title
+        # check if user logged in and has permission
+        token = 0
+        if 'token' in session:
+            token = session[ 'token' ]
+        else:
+            abort(401)
+        if check_permissions(token, 'update_list', list_id):
+            if new_title is None or list_id is None:
+                abort(400, 'data messing')
+            else:
+
+                user_list = List.query.get(int(list_id))
+                print(user_list.format())
+                user_list.title = new_title
+                try:
                     user_list.update()
 
                     return jsonify({
                         'success': True,
                         'message': 'list updated successfully'
                     })
-            else:
-                abort(401)
-
-        except Exception as e:
-            abort(422)
+                except Exception as e:
+                    abort(422)
+        else:
+            abort(401)
 
     # delete list endpoint.
     # permission: delete_list
     @app.route('/list/<int:list_id>', methods=[ 'DELETE' ])
     def delete_list(list_id):
-        try:
-            if check_permissions(session[ 'token' ], 'delete_list', list_id):
-                if list_id is None:
-                    abort(400, 'data messing')
-                else:
-                    user_list = List.query.get(list_id)
+        # check if user logged in and has permission
+        token = 0
+        if 'token' in session:
+            token = session[ 'token' ]
+        else:
+            abort(401)
+
+        if check_permissions(token, 'delete_list', list_id):
+            if list_id is None:
+                abort(400, 'data messing')
+            else:
+                user_list = List.query.get(list_id)
+                try:
                     user_list.delete()
 
                     return jsonify({
                         'success': True,
                         'message': 'list deleted successfully'
                     })
-            else:
-                abort(401)
+                except Exception as e:
+                    abort(422)
 
-        except Exception as e:
-            abort(422)
+        else:
+            abort(401)
+
+
 
     # assign member to list by user id and list id endpoint.
     # this endpoint should take list_id and user_id
