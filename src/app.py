@@ -446,17 +446,25 @@ def create_app(test_config=None):
             if user_id is None or user_list_id is None:
                 abort(400, 'data messing')
             else:
-                new_user_list = UserLists(user_id=user_id, list_id=user_list_id)
-                try:
+                check_user = UserLists.query.filter(UserLists.user_id == user_id,
+                                                    UserLists.list_id == user_list_id).all()
+                if not check_user:
+                    new_user_list = UserLists(user_id=user_id, list_id=user_list_id)
+                    try:
 
-                    new_user_list.insert()
+                        new_user_list.insert()
 
+                        return jsonify({
+                            'success': True,
+                            'message': 'member assigned successfully'
+                        })
+                    except Exception as e:
+                        abort(422)
+                else:
                     return jsonify({
-                        'success': True,
-                        'message': 'member assigned successfully'
+                        'success': False,
+                        'message': 'member already assigned'
                     })
-                except Exception as e:
-                    abort(422)
         else:
             abort(401)
 
@@ -479,15 +487,22 @@ def create_app(test_config=None):
             if user_id is None or user_list_id is None:
                 abort(400, 'data messing')
             else:
-                user_list = UserLists.query.filter(UserLists.user_id == user_id, UserLists.list_id == user_list_id)
-                try:
-                    user_list.delete()
+                user_list = UserLists.query.filter_by(user_id=user_id, list_id=user_list_id).first()
+                if user_list:
+                    try:
+                        user_list.delete()
+                        return jsonify({
+                            'success': True,
+                            'message': 'member revoked successfully'
+                        })
+                    except Exception as e:
+                        abort(422)
+                else:
                     return jsonify({
-                        'success': True,
-                        'message': 'member revoked successfully'
+                        'success': False,
+                        'message': 'member assignation was not found'
                     })
-                except Exception as e:
-                    abort(422)
+
         else:
             abort(401)
 
@@ -504,12 +519,14 @@ def create_app(test_config=None):
             abort(401)
         if check_permissions(token, 'get_card', logged_user_id):
             if page:
-                cards_query = Cards.query.order_by(db.desc(Cards.comments_count)).paginate(page, results_per_page, False).items
+                cards_query = Cards.query.order_by(db.desc(Cards.comments_count)).paginate(page, results_per_page,
+                                                                                           False).items
                 cards = [ crd.format() for crd in cards_query ]
                 return jsonify(cards)
             else:
                 page = 1
-                cards_query = Cards.query.order_by(db.desc(Cards.comments_count)).paginate(page, results_per_page, False).items
+                cards_query = Cards.query.order_by(db.desc(Cards.comments_count)).paginate(page, results_per_page,
+                                                                                           False).items
                 cards = [ crd.format() for crd in cards_query ]
                 return jsonify(cards)
         else:

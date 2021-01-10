@@ -87,7 +87,7 @@ def get_permissions(user_id):
         all_user_created_comments = [str(cmnt.id) for cmnt in all_user_created_comments_query]
 
         # get all user created replies or replies in his cards or cards in own lists
-        all_user_view_replies_query = Replies.filter(Replies.comment_id.in_(all_user_view_comments)).all()
+        all_user_view_replies_query = Replies.query.filter(Replies.comment_id.in_(all_user_view_comments)).all()
         all_user_view_replies = [str(rply.id) for rply in all_user_view_replies_query]
 
         all_user_created_replies_query = Replies.query.filter(Replies.creator_id == user_id).all()
