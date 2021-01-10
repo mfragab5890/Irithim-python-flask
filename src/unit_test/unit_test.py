@@ -63,7 +63,7 @@ class IrithmTestCase(unittest.TestCase):
             "user_name": "mostafa_ragab"
         }
         self.token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiQWRtaW4iLCJwZXJtaXNzaW9ucyI6eyJnZXRfYWxsX2xpc3RzIjoiQWxsIiwiY3JlYXRlX2xpc3QiOiJBbGwiLCJ1cGRhdGVfbGlzdCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZGVsZXRlX2xpc3QiOlsxLDIsMyw0LDUsNiw3LDgsOSwxMF0sImdldF9saXN0IjoiQWxsIiwiYXNzaWduX21lbWJlcl9saXN0IjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJyZXZva2VfbWVtYmVyX2xpc3QiOlsxLDIsMyw0LDUsNiw3LDgsOSwxMF0sImdldF9hbGxfdXNlcnMiOiJBbGwiLCJjcmVhdGVfY2FyZCI6IkFsbCIsInVwZGF0ZV9jYXJkIjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfY2FyZCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X2NhcmQiOiJBbGwiLCJjcmVhdGVfY29tbWVudCI6IkFsbCIsInVwZGF0ZV9jb21tZW50IjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfY29tbWVudCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X2NvbW1lbnQiOiJBbGwiLCJjcmVhdGVfcmVwbGllcyI6IkFsbCIsInVwZGF0ZV9yZXBsaWVzIjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfcmVwbGllcyI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X3JlcGxpZXMiOiJBbGwifX0.SPGXta7MX1hDVmi2jOXR33pexRc7M9GJ9cWEZLGKQn8'
-
+        self.bad_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiQWRtaW4iLCJwZXJtaXNzaW9ucyI6eyJnZXRfYWxsX2xpc3RzIjpmYWxzZSwiY3JlYXRlX2xpc3QiOmZhbHNlLCJ1cGRhdGVfbGlzdCI6ZmFsc2UsImRlbGV0ZV9saXN0IjpmYWxzZSwiZ2V0X2xpc3QiOmZhbHNlLCJhc3NpZ25fbWVtYmVyX2xpc3QiOmZhbHNlLCJyZXZva2VfbWVtYmVyX2xpc3QiOmZhbHNlLCJnZXRfYWxsX3VzZXJzIjpmYWxzZSwiY3JlYXRlX2NhcmQiOmZhbHNlLCJ1cGRhdGVfY2FyZCI6ZmFsc2UsImRlbGV0ZV9jYXJkIjpmYWxzZSwiZ2V0X2NhcmQiOmZhbHNlLCJjcmVhdGVfY29tbWVudCI6ZmFsc2UsInVwZGF0ZV9jb21tZW50IjpmYWxzZSwiZGVsZXRlX2NvbW1lbnQiOmZhbHNlLCJnZXRfY29tbWVudCI6ZmFsc2UsImNyZWF0ZV9yZXBsaWVzIjpmYWxzZSwidXBkYXRlX3JlcGxpZXMiOmZhbHNlLCJkZWxldGVfcmVwbGllcyI6ZmFsc2UsImdldF9yZXBsaWVzIjpmYWxzZX19.KQtBc_SiindvMVTumfzmQ9bcg-QPlFPaKJbOHMJ7JjU'
         # binds the app to the current context
         with self.app.app_context():
             self.db = SQLAlchemy()
@@ -130,16 +130,164 @@ class IrithmTestCase(unittest.TestCase):
     # test get unconfirmed users from database
     def test_get_unconfirmed_users(self):
         """Test query unconfirmed users will return results """
-        with self.app.test_client() as tclient:
-            with tclient.session_transaction() as sess:
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
                 sess[ 'token' ] = self.token
-                sess['user_id'] = 1
-        res = self.client().get('/unconfirmed')
-        data = json.loads(res.data)
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.get('/unconfirmed')
+            data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 200)
-        self.assertTrue(data)
+            self.assertEqual(res.status_code, 200)
+            self.assertTrue(data[ 'users' ])
 
+    # test error get unconfirmed users from database with forbidden token
+    def test_error_get_unconfirmed_users(self):
+        """Test error query unconfirmed users will not return results with forbidden key token """
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 2
+                sess[ 'token' ] = self.bad_token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.get('/unconfirmed')
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'success' ], False)
+            self.assertEqual(data[ 'message' ], 'Unauthorized.')
+
+    # test get users per page from database
+    def test_get_users_per_page(self):
+        """Test query users will return results paginated """
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.get('/users/1')
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertTrue(data[ 'users' ])
+
+    # test error get users from database with no page parameter
+    def test_error_get_users_no_page(self):
+        """Test query unconfirmed users will return results """
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.get('/users')
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 404)
+            self.assertEqual(data[ 'success' ], False)
+            self.assertEqual(data[ 'message' ],
+                             'Not found!!! : please check your Data or maybe your request is currently not available.')
+
+    # test error get users from database with forbidden token
+    def test_error_get_users_bad_token(self):
+        """Test error query users will not return results with forbidden key token """
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 2
+                sess[ 'token' ] = self.bad_token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.get('/users/1')
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+    # test get lists per page from database
+    def test_get_lists_per_page(self):
+        """Test query lists will return results paginated """
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.get('/lists/1')
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertTrue(data[ 'lists' ])
+
+    # test error get lists from database with forbidden token
+    def test_error_get_lists_bad_token(self):
+        """Test error query lists will not return results with forbidden key token """
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 2
+                sess[ 'token' ] = self.bad_token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.get('/users/1')
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+    # test get list by id from database
+    def test_get_user_list(self):
+        """Test query list by id will return results"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.get('/list', json={'list_id':1})
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertTrue(data[ 'list' ])
+
+    # test error get list by id from database with forbidden token
+    def test_error_get_list_bad_token(self):
+        """Test error query list will not return results with forbidden key token """
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 2
+                sess[ 'token' ] = self.bad_token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.get('/list', json={'list_id':1})
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+    # test get all cards from database
+    def test_get_all_cards(self):
+        """Test query all cards will return results paginated """
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.get('/cards/1')
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertTrue(data[ 'cards' ])
+
+    # test error get list by id from database with forbidden token
+    def test_error_get_list_bad_token(self):
+        """Test error query list will not return results with forbidden key token """
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 1
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.get('/cards/1')
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
 
 
 # Make the tests conveniently executable
