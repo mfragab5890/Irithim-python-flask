@@ -393,6 +393,19 @@ c049e99272c5
 --
 
 COPY public.cards (id, title, description, comments_count, list_id, creator_id) FROM stdin;
+3	title	description	0	3	1
+4	title	description	0	4	1
+5	title	description	0	4	2
+6	title	description	0	3	2
+7	title	description	0	2	2
+8	title	description	0	1	2
+9	title	description	0	1	3
+10	title	description	0	2	3
+11	title	description	0	3	3
+13	Irithm	new_description	0	1	1
+2	title	description	5	2	1
+14	new_title	new_description	0	2	1
+1	title	description	6	1	1
 \.
 
 
@@ -401,6 +414,17 @@ COPY public.cards (id, title, description, comments_count, list_id, creator_id) 
 --
 
 COPY public.comments (id, content, replies_count, card_id, creator_id) FROM stdin;
+4	title	0	1	1
+5	title	0	2	1
+6	title	0	2	1
+7	title	0	2	1
+8	title	0	2	1
+9	title	0	2	1
+1	Irithm task	1	1	1
+10	title	0	1	1
+11	new_title	0	1	1
+3	title_title	1	1	1
+12	title	0	1	6
 \.
 
 
@@ -409,6 +433,16 @@ COPY public.comments (id, content, replies_count, card_id, creator_id) FROM stdi
 --
 
 COPY public.lists (id, title, creator_id) FROM stdin;
+2	title_2	1
+3	title_3	1
+5	title_5	2
+6	title_6	2
+7	title_7	2
+8	title_8	2
+1	Irithm	1
+4	Irithm_4	1
+10	new_title	1
+11	title_title	1
 \.
 
 
@@ -417,6 +451,7 @@ COPY public.lists (id, title, creator_id) FROM stdin;
 --
 
 COPY public.owner (id, user_name, email, password_hash, role) FROM stdin;
+1	mostafa_fouad	m.f.ragab5890@gmail.com	$2b$12$zINYJTguSkEfsq8Z53IBaeFVwblScb0XthxxkOzSw0orxr.yGw8ae	owner
 \.
 
 
@@ -425,6 +460,8 @@ COPY public.owner (id, user_name, email, password_hash, role) FROM stdin;
 --
 
 COPY public.replies (id, content, comment_id, creator_id) FROM stdin;
+1	Irithm task reply	1	1
+6	reply_reply	3	1
 \.
 
 
@@ -433,6 +470,8 @@ COPY public.replies (id, content, comment_id, creator_id) FROM stdin;
 --
 
 COPY public.unconfirmed_users (id, user_name, email, password_hash, role) FROM stdin;
+9	user_5	user_5@example.com	$2b$12$lySwnta4EItSP9Dp1Tovwel1SOJsVvvoWK0wXieUIjlA5fsAiZ9nS	t
+11	newUser_1	example_1@example.com	$2b$12$DApI2icnKvSt/TJjGwZ1h.oMs2zwUBeDYUzRfpbT/t.hvfw0/qPUe	f
 \.
 
 
@@ -441,6 +480,12 @@ COPY public.unconfirmed_users (id, user_name, email, password_hash, role) FROM s
 --
 
 COPY public.users (id, user_name, email, role, password_hash) FROM stdin;
+1	mostafa_fouad	m.f.ragab5890@gmail.com	t	$2b$12$zINYJTguSkEfsq8Z53IBaeFVwblScb0XthxxkOzSw0orxr.yGw8ae
+2	mostafaFouad	m.f.ragab@gmail.com	t	$2b$12$zINYJTguSkEfsq8Z53IBaeFVwblScb0XthxxkOzSw0orxr.yGw8ae
+4	newUser	example@example.com	f	$2b$12$RrwaMRCX7s6UJ/.OBt5bTugc92r0ffUm/pcNo0Rzx9SGg.yC.DHca
+5	user_1	user_3@example.com	t	$2b$12$GuY0q4bXJfG2s1J6zytBJ.bu.tVqXAL3lvmvkELOGUEQPpScEDH7q
+6	newUser_3	example_3@example.com	f	$2b$12$0qhbm.Vw0Wpkf/KGZaWLAOCaQipH2dAc9raqP0wgUWylRSNvq8i7q
+3	mostafa_Fouad	m.fouad@gmail.com	f	$2b$12$zINYJTguSkEfsq8Z53IBaeFVwblScb0XthxxkOzSw0orxr.yGw8ae
 \.
 
 
@@ -449,6 +494,22 @@ COPY public.users (id, user_name, email, role, password_hash) FROM stdin;
 --
 
 COPY public.users_lists (id, user_id, list_id) FROM stdin;
+1	1	1
+2	1	2
+3	1	3
+4	1	4
+5	2	5
+6	2	6
+7	2	7
+8	2	8
+9	3	8
+10	3	6
+11	3	4
+12	3	2
+16	6	1
+17	1	10
+19	5	1
+20	1	11
 \.
 
 
@@ -456,56 +517,56 @@ COPY public.users_lists (id, user_id, list_id) FROM stdin;
 -- Name: cards_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.cards_id_seq', 1, false);
+SELECT pg_catalog.setval('public.cards_id_seq', 14, true);
 
 
 --
 -- Name: comments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.comments_id_seq', 1, false);
+SELECT pg_catalog.setval('public.comments_id_seq', 12, true);
 
 
 --
 -- Name: lists_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.lists_id_seq', 1, false);
+SELECT pg_catalog.setval('public.lists_id_seq', 11, true);
 
 
 --
 -- Name: owner_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.owner_id_seq', 1, false);
+SELECT pg_catalog.setval('public.owner_id_seq', 1, true);
 
 
 --
 -- Name: replies_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.replies_id_seq', 1, false);
+SELECT pg_catalog.setval('public.replies_id_seq', 6, true);
 
 
 --
 -- Name: unconfirmed_users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.unconfirmed_users_id_seq', 1, false);
+SELECT pg_catalog.setval('public.unconfirmed_users_id_seq', 13, true);
 
 
 --
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 1, false);
+SELECT pg_catalog.setval('public.users_id_seq', 6, true);
 
 
 --
 -- Name: users_lists_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_lists_id_seq', 1, false);
+SELECT pg_catalog.setval('public.users_lists_id_seq', 20, true);
 
 
 --
