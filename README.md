@@ -116,15 +116,16 @@ Setting the `FLASK_APP` variable to `app` directs flask to use the `app.py`.
 - user id and a JWT token containing user permissions is stored in session.
 - user can do CRUD actions according to the permissions granted to him.
 ## Tests:
-### unit test:
-- exit the server but postgres running
-- run `src\unit_test\unit_test.py`
-- Note: multiple runs will require updating some data specially post user as user email and user name should be unique also any delete as running once will delete the required entity.
 ### Postman
 - Go to url `https://web.postman.co/`
 - login and open workspace
 - upload Irithm-python-flask collection from `/Irithm-python-flask.postman_collection.json`
 - test each endpoint with each role but keep in mind to login with each role (Owner, Admin and Member) to add user token to session.
+
+### unit test:
+- exit the server but postgres running
+- run `src\unit_test\unit_test.py`
+- Note: multiple runs will require updating some data specially post user as user email and user name should be unique also any delete as running once will delete the required entity.
 ## API References
 
 ### Getting Started
