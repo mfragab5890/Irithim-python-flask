@@ -12,27 +12,26 @@ def get_permissions(user_id):
 
         # get all user created lists
         user_owned_lists_query = List.query.filter(List.creator_id == user_id).all()
-        user_owned_lists = [ lst.id for lst in user_owned_lists_query ]
+        user_owned_lists = [ str(lst.id) for lst in user_owned_lists_query ]
 
         # get all cards on user lists or cards he created
         user_lists_cards_query = Cards.query.filter(Cards.list_id.in_(user_owned_lists)).all()
-        user_lists_cards = [ crd.id for crd in user_lists_cards_query ]
+        user_lists_cards = [ str(crd.id) for crd in user_lists_cards_query ]
         all_user_cards_query = Cards.query.filter(Cards.creator_id == user_id).all()
-        all_user_cards = [ crd.id for crd in all_user_cards_query ]
+        all_user_cards = [ str(crd.id) for crd in all_user_cards_query ]
         all_user_cards += user_lists_cards
 
         # get all user created comments or comments in his cards or cards in own lists
         user_own_comments_query = Comments.query.filter(Comments.creator_id == user_id).all()
-        user_own_comments = [ cmnt.id for cmnt in user_own_comments_query ]
+        user_own_comments = [ str(cmnt.id) for cmnt in user_own_comments_query ]
         user_cards_comments_query = Comments.query.filter(Comments.card_id.in_(user_lists_cards)).all()
-        user_cards_comments = [ cmnt.id for cmnt in user_cards_comments_query ]
+        user_cards_comments = [ str(cmnt.id) for cmnt in user_cards_comments_query ]
         all_user_comments = user_own_comments + user_cards_comments
 
         # get all user created replies or replies in his cards or cards in own lists
         all_user_replies_query = Replies.query.filter(Replies.comment_id.in_(all_user_comments)).all()
-        all_user_replies = [ rply.id for rply in all_user_replies_query ]
+        all_user_replies = [ str(rply.id) for rply in all_user_replies_query ]
 
-        print(all_user_cards[2])
         # create payload
         payload = {
             'user_id': user_id,
@@ -72,27 +71,27 @@ def get_permissions(user_id):
     else:
         # get all lists assigned to the user
         user_assigned_lists_query = UserLists.query.filter(UserLists.user_id == user_id).all()
-        user_assigned_lists = [lst.id for lst in user_assigned_lists_query]
+        user_assigned_lists = [str(lst.id) for lst in user_assigned_lists_query]
         # get all cards on user lists and cards he created in his assigned lists
         all_user_view_cards_query = Cards.query.filter(Cards.list_id.in_(user_assigned_lists)).all()
-        all_user_view_cards = [crd.id for crd in all_user_view_cards_query]
+        all_user_view_cards = [str(crd.id) for crd in all_user_view_cards_query]
 
         all_user_created_cards_query = Cards.query.filter(Cards.creator_id == user_id).all()
-        all_user_created_cards = [crd.id for crd in all_user_created_cards_query]
+        all_user_created_cards = [str(crd.id) for crd in all_user_created_cards_query]
 
         # get all user created comments and comments in his cards  in assigned lists
         all_user_view_comments_query = Comments.query.filter(Comments.card_id.in_(all_user_view_cards)).all()
-        all_user_view_comments = [cmnt.id for cmnt in all_user_view_comments_query]
+        all_user_view_comments = [str(cmnt.id) for cmnt in all_user_view_comments_query]
 
         all_user_created_comments_query = Comments.query.filter(Comments.creator_id == user_id).all()
-        all_user_created_comments = [cmnt.id for cmnt in all_user_created_comments_query]
+        all_user_created_comments = [str(cmnt.id) for cmnt in all_user_created_comments_query]
 
         # get all user created replies or replies in his cards or cards in own lists
         all_user_view_replies_query = Replies.filter(Replies.comment_id.in_(all_user_view_comments)).all()
-        all_user_view_replies = [rply.id for rply in all_user_view_replies_query]
+        all_user_view_replies = [str(rply.id) for rply in all_user_view_replies_query]
 
         all_user_created_replies_query = Replies.query.filter(Replies.creator_id == user_id).all()
-        all_user_created_replies = [ rply.id for rply in all_user_created_replies_query ]
+        all_user_created_replies = [ str(rply.id) for rply in all_user_created_replies_query ]
 
         # create payload
         payload = {
