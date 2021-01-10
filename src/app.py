@@ -29,28 +29,6 @@ def create_app(test_config=None):
     # variable for pagination to show results per page
     results_per_page = 3
 
-    # testing app
-    @app.route('/', methods=[ 'GET' ])
-    def index():
-        session[ 'user_id' ] = 1
-        session[
-            'token' ] = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiQWRtaW4iLCJwZXJtaXNzaW9ucyI6eyJnZXRfYWxsX2xpc3RzIjoiQWxsIiwiY3JlYXRlX2xpc3QiOiJBbGwiLCJ1cGRhdGVfbGlzdCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZGVsZXRlX2xpc3QiOlsxLDIsMyw0LDUsNiw3LDgsOSwxMF0sImdldF9saXN0IjoiQWxsIiwiYXNzaWduX21lbWJlcl9saXN0IjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJyZXZva2VfbWVtYmVyX2xpc3QiOlsxLDIsMyw0LDUsNiw3LDgsOSwxMF0sImdldF9hbGxfdXNlcnMiOiJBbGwiLCJjcmVhdGVfY2FyZCI6IkFsbCIsInVwZGF0ZV9jYXJkIjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfY2FyZCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X2NhcmQiOiJBbGwiLCJjcmVhdGVfY29tbWVudCI6IkFsbCIsInVwZGF0ZV9jb21tZW50IjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfY29tbWVudCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X2NvbW1lbnQiOiJBbGwiLCJjcmVhdGVfcmVwbGllcyI6IkFsbCIsInVwZGF0ZV9yZXBsaWVzIjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfcmVwbGllcyI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X3JlcGxpZXMiOiJBbGwifX0.SPGXta7MX1hDVmi2jOXR33pexRc7M9GJ9cWEZLGKQn8'
-        owner = Owner.query.first()
-        owner.role = 'owner'
-        name = owner.user_name
-        owner.update()
-        query_user = User.query.get(1)
-        user = query_user.format()
-        query_lists = List.query.all()
-        lists_ids = [ lst.id for lst in query_lists ]
-
-        lists_query = db.session.query(Cards).join(List) \
-            .filter(Cards.list_id == 1).order_by(db.desc(Cards.id)).all()
-        user_list = [ lst.id for lst in lists_query ]
-        user_list += lists_ids
-        print(lists_query)
-        return jsonify(user_list)
-
     # ----------------------------------------------------------------------------#
     # owner end points.
     # ----------------------------------------------------------------------------#
@@ -58,7 +36,7 @@ def create_app(test_config=None):
     @app.route('/unconfirmed', methods=[ 'GET' ])
     def get_unconfirmed_users():
         # check if user logged in and is the owner
-        if session[ 'user_id' ]:
+        if 'user_id' in session:
             id = session[ 'user_id' ]
             verify = Owner.query.get(id)
             if verify is not None:
@@ -68,22 +46,40 @@ def create_app(test_config=None):
             else:
                 abort(401)
         else:
-            abort(401)
+            return jsonify({
+                'success': False,
+                'message': 'You are not logged in, Please log in first'
+            })
 
     # confirm users
     @app.route('/user/confirmation/<int:user_id>', methods=[ 'POST' ])
     def confirm_user(user_id):
         # check if user logged in and is the owner
-        if session[ 'user_id' ]:
+        if 'user_id' in session:
             owner_id = session[ 'user_id' ]
             verify = Owner.query.get(owner_id)
             if verify is not None:
                 new_user = User_unconfirmed.query.get(user_id)
+                if not new_user:
+                    abort(404)
+                else:
+                    pass
+                new_role = True
+                if not new_user.role:
+                    new_role = False
+                else:
+                    pass
+
+                new_user_name = new_user.user_name
+                new_email = new_user.email
+                new_password = new_user.password_hash
+
                 try:
-                    user = User(user_name=new_user.user_name,
-                                email=new_user.email,
-                                role=new_user.role,
-                                password=new_user.password)
+                    user = User(user_name=new_user_name,
+                                email=new_email,
+                                role=new_role,
+                                password=new_password
+                                )
                     user.insert()
                     new_user.delete()
                     return jsonify({
@@ -93,15 +89,25 @@ def create_app(test_config=None):
                 except Exception as e:
                     abort(422)
 
+            else:
+                abort(401)
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'You are not logged in please log in first'
+            })
+
     # delete sign-up request
     @app.route('/user/confirmation/<int:user_id>', methods=[ 'DELETE' ])
     def delete_user(user_id):
         # check if user logged in and is the owner
-        if session[ 'user_id' ]:
+        if 'user_id' in session:
             owner_id = session[ 'user_id' ]
             verify = Owner.query.get(owner_id)
             if verify is not None:
                 new_user = User_unconfirmed.query.get(user_id)
+                if not new_user:
+                    abort(404)
                 try:
                     new_user.delete()
 
@@ -111,26 +117,36 @@ def create_app(test_config=None):
                     })
                 except Exception as e:
                     abort(422)
+            else:
+                abort(401)
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'You are not logged in please log in first'
+            })
 
     # change role
     @app.route('/user-role/<int:user_id>', methods=[ 'PATCH' ])
     def change_user_role(user_id):
         # check if user logged in and is the owner
-        if session[ 'user_id' ]:
+        if 'user_id' in session:
             owner_id = session[ 'user_id' ]
             verify = Owner.query.get(owner_id)
             if verify is not None:
                 body = request.get_json()
                 # verify user requested exists
-                user = User.query.filter_by(id=user_id).one_or_none()
+                user = User.query.get(user_id)
                 if user:
-                    if 'role' in body:
-                        role = body.get('role')
+                    if body:
+                        role = body.get('role',None)
                         if role:
                             user.role = True
                         elif not role:
                             user.role = False
-
+                    else:
+                        pass
+                else:
+                    abort(404)
                 try:
                     user.update()
 
@@ -140,6 +156,13 @@ def create_app(test_config=None):
                     })
                 except Exception as e:
                     abort(422)
+            else:
+                abort(401)
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'You are not logged in, Please log in first'
+            })
 
     # ----------------------------------------------------------------------------#
     # User end points.
@@ -244,7 +267,16 @@ def create_app(test_config=None):
     # permission: get_all_lists
     @app.route('/lists/<int:page>', methods=[ 'GET' ])
     def get_lists_paginated(page):
-        if check_permissions(session[ 'token' ], 'get_all_lists', session[ 'user_id' ]):
+        # check if user logged in and has permission
+        token = 0
+        logged_user_id = 0
+        if 'token' in session:
+            token = session[ 'token' ]
+        elif 'token' in session:
+            logged_user_id = session[ 'user_id' ]
+        else:
+            abort(401)
+        if check_permissions(token, 'get_all_lists', logged_user_id):
             if page:
                 lists_query = List.query.paginate(page, results_per_page, False).items
                 lists = [ lst.format() for lst in lists_query ]
@@ -257,41 +289,34 @@ def create_app(test_config=None):
         else:
             abort(401)
 
-    # get list by id with cards in it paginated endpoint.
-    # this endpoint should take list id and page number
+    # get list by id with cards in it endpoint.
+    # this endpoint should take list id
     # permission: get_list
     @app.route('/list', methods=[ 'GET' ])
     def get_list():
         body = request.get_json()
         list_id = body.get('list_id', None)
-        page = body.get('page', None)
         if not list_id:
             abort(400)
-        if check_permissions(session[ 'token' ], 'get_all_lists', list_id):
-            if page:
-                query_list = List.query.get(list_id)
-                user_list = query_list.format()
-                list_cards = db.session.query(Cards).join(List) \
-                    .filter(List.id == list_id) \
-                    .paginate(page, results_per_page, False).items
-                cards = [ crd.format() for crd in list_cards ]
-                return jsonify({
-                    'list': user_list,
-                    'cards': cards
-                })
-            else:
-                query_list = List.query.get(list_id)
-                user_list = query_list.format()
-                list_cards = db.session.query(Cards).join(List) \
-                    .filter(List.id == list_id) \
-                    .paginate(page, results_per_page, False).items
-                cards = [ crd.format() for crd in list_cards ]
-                return jsonify({
-                    'list': user_list,
-                    'cards': cards
-                })
         else:
-            abort(401)
+            # check if user logged in and has permission
+            token = 0
+            logged_user_id = 0
+            if 'token' in session:
+                token = session[ 'token' ]
+            elif 'token' in session:
+                logged_user_id = session[ 'user_id' ]
+            else:
+                abort(401)
+            if check_permissions(token, 'get_list', list_id):
+                query_list = List.query.get(list_id)
+                user_list = query_list.format_with_cards()
+                return jsonify({
+                    'list': user_list
+                })
+
+            else:
+                abort(401)
 
     # create list endpoint.
     # this end point should take title, creator_id
@@ -303,7 +328,16 @@ def create_app(test_config=None):
         new_title = body.get('title', None)
         new_creator_id = body.get('creator_id', None)
         try:
-            if check_permissions(session[ 'token' ], 'create_list', session[ 'user_id' ]):
+            # check if user logged in and has permission
+            token = 0
+            logged_user_id = 0
+            if 'token' in session:
+                token = session[ 'token' ]
+            elif 'token' in session:
+                logged_user_id = session[ 'user_id' ]
+            else:
+                abort(401)
+            if check_permissions(token, 'create_list', logged_user_id):
                 if new_title is None or new_creator_id is None:
                     abort(400, 'data messing')
                 else:
@@ -883,5 +917,25 @@ def create_app(test_config=None):
         response = jsonify(ex.error)
         response.status_code = ex.status_code
         return response
+        # --------------#
+        #  testing app  #
+        # --------------#
+        '''@app.route('/', methods=[ 'GET' ])
+        def index():
+            session[ 'user_id' ] = 1
+            session['token' ] = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiQWRtaW4iLCJwZXJtaXNzaW9ucyI6eyJnZXRfYWxsX2xpc3RzIjoiQWxsIiwiY3JlYXRlX2xpc3QiOiJBbGwiLCJ1cGRhdGVfbGlzdCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZGVsZXRlX2xpc3QiOlsxLDIsMyw0LDUsNiw3LDgsOSwxMF0sImdldF9saXN0IjoiQWxsIiwiYXNzaWduX21lbWJlcl9saXN0IjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJyZXZva2VfbWVtYmVyX2xpc3QiOlsxLDIsMyw0LDUsNiw3LDgsOSwxMF0sImdldF9hbGxfdXNlcnMiOiJBbGwiLCJjcmVhdGVfY2FyZCI6IkFsbCIsInVwZGF0ZV9jYXJkIjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfY2FyZCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X2NhcmQiOiJBbGwiLCJjcmVhdGVfY29tbWVudCI6IkFsbCIsInVwZGF0ZV9jb21tZW50IjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfY29tbWVudCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X2NvbW1lbnQiOiJBbGwiLCJjcmVhdGVfcmVwbGllcyI6IkFsbCIsInVwZGF0ZV9yZXBsaWVzIjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfcmVwbGllcyI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X3JlcGxpZXMiOiJBbGwifX0.SPGXta7MX1hDVmi2jOXR33pexRc7M9GJ9cWEZLGKQn8'
+            owner = Owner.query.first()
+            owner.role = 'owner'
+            name = owner.user_name
+            owner.update()
+            query_user = User.query.get(1)
+            user = query_user.format()
+            query_lists = List.query.all()
+            lists_ids = [ lst for lst in query_lists ]
+
+            lists_query = List.query.all()
+            user_list = [ lst.format_with_cards() for lst in lists_query ]
+            print(lists_query)
+            return jsonify(user_list)'''
 
     return app

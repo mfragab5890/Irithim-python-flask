@@ -93,7 +93,6 @@ class User_unconfirmed(db.Model):
             'id': self.id,
             'user_name': self.user_name,
             'email': self.email,
-            'password': self.password_hash,
             'role': self.role
         }
 
@@ -137,6 +136,7 @@ class User(db.Model):
             'password_hash': self.password_hash,
             'role': self.role
         }
+
     def format_no_password(self):
         return {
             'id': self.id,
@@ -177,6 +177,14 @@ class List(db.Model):
             'id': self.id,
             'title': self.title,
             'creator_id': self.creator_id
+        }
+
+    def format_with_cards(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'creator_id': self.creator_id,
+            'cards': [ crd.format() for crd in self.cards ]
         }
 
 

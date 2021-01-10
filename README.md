@@ -190,7 +190,7 @@ The API will return error types when requests fail, example:
 ##### POST '/register'
 
 - Function: allow user to sign up and wait owner to confirm.
-- Requested Arguments:user_name, email, role
+- Requested Arguments:user_name, email, role and password
 - Returns an object with success, custom message
 
 ##### GET '/users/<int:page>'
@@ -215,8 +215,8 @@ The API will return error types when requests fail, example:
 
 ##### GET '/list'
 
-- Function: get list by id with cards in it paginated
-- Requested Arguments: permission to get_list,list id and page number
+- Function: get list by id with cards in it
+- Requested Arguments: permission to get_list and list id
 - Returns an object with list and cards
 
 ##### POST '/list'
