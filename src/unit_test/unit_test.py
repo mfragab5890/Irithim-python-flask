@@ -567,6 +567,160 @@ class IrithmTestCase(unittest.TestCase):
             self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
             self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
 
+    # test changing user role in database
+    def test_patch_user_role(self):
+        """Test patch user role will return success"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.patch('/user-role/3', json={'role': True})
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(data[ 'success' ], True)
+            self.assertEqual(data[ 'message' ], 'User role changed successfully')
+
+    # test error deleting reply from database with forbidden token
+    def test_error_patch_user_role_bad_token(self):
+        """Test error patch user role with forbidden key token will raise error"""
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 2
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.patch('/user-role/3', json={'role': True})
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'success' ], False)
+            self.assertEqual(data[ 'message' ], 'Unauthorized.')
+
+    # test changing list title in database
+    def test_patch_user_list_title(self):
+        """Test patch list title will return success"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.patch('/list', json={'list_id': 2, 'title': 'test_title'})
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(data[ 'success' ], True)
+            self.assertEqual(data[ 'message' ], 'list updated successfully')
+
+    # test changing list title from database with forbidden token
+    def test_error_patch_list_title_bad_token(self):
+        """Test error patching list title with forbidden key token will raise error"""
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 2
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.patch('/list', json={'list_id': 1, 'title': 'test_title'})
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+    # test changing card title in database
+    def test_patch_user_card_title(self):
+        """Test patch card title will return success"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.patch('/card', json={'card_id': 3, 'title': 'test_title'})
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(data[ 'success' ], True)
+            self.assertEqual(data[ 'message' ], 'card updated successfully')
+
+    # test changing card title from database with forbidden token
+    def test_error_patch_card_title_bad_token(self):
+        """Test error patch card title with forbidden key token will raise error"""
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 2
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.patch('/card', json={'card_id': 3, 'title': 'test_error_title'})
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+    # test changing comment content in database
+    def test_patch_user_comment_content(self):
+        """Test patch comment content will return success"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.patch('/comment', json={'comment_id': 18, 'content': 'test_content'})
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(data[ 'success' ], True)
+            self.assertEqual(data[ 'message' ], 'comment updated successfully')
+
+    # test changing comment content from database with forbidden token
+    def test_error_patch_comment_content_bad_token(self):
+        """Test error patch comment content with forbidden key token will raise error"""
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 2
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.patch('/comment', json={'comment_id': 18, 'title': 'test_error_content'})
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+    # test changing reply content in database
+    def test_patch_user_reply_content(self):
+        """Test patch reply content will return success"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.patch('/reply', json={'reply_id': 8, 'content': 'test_content'})
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(data[ 'success' ], True)
+            self.assertEqual(data[ 'message' ], 'reply updated successfully')
+
+    # test changing reply content from database with forbidden token
+    def test_error_patch_reply_content_bad_token(self):
+        """Test error patch reply content with forbidden key token will raise error"""
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 2
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.patch('/reply', json={'reply_id': 8, 'title': 'test_error_content'})
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
 
 
 # Make the tests conveniently executable
