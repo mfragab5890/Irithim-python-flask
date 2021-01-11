@@ -859,20 +859,23 @@ def create_app():
                 abort(400, 'data messing')
             else:
                 user_comment = Comments.query.get(comment_id)
-                card_id = user_comment.card_id
-                try:
+                if user_comment:
+                    user_card_id = user_comment.card_id
+                    try:
 
-                    user_comment.delete()
-                    # decrement comments count on the card
-                    user_card = Cards.query.get(card_id)
-                    user_card.comments_count -= 1
-                    user_card.update()
-                    return jsonify({
-                        'success': True,
-                        'message': 'comment deleted successfully'
-                    })
-                except Exception as e:
-                    abort(422)
+                        user_comment.delete()
+                        # decrement comments count on the card
+                        user_card = Cards.query.get(user_card_id)
+                        user_card.comments_count -= 1
+                        user_card.update()
+                        return jsonify({
+                            'success': True,
+                            'message': 'comment deleted successfully'
+                        })
+                    except Exception as e:
+                        abort(422)
+                else:
+                    abort(404)
         else:
             abort(401)
 
