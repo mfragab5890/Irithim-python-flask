@@ -62,6 +62,22 @@ class IrithmTestCase(unittest.TestCase):
             "password": "tafiTAFI",
             "user_name": "mostafa_ragab"
         }
+        self.list = {
+            "title": "test_list_title",
+        }
+        self.card = {
+            "title": "test_card_title",
+            "description": "test_card_description",
+            "list_id": 2
+        }
+        self.comment = {
+            "content": "test_comment_content",
+            "card_id": 3
+        }
+        self.reply = {
+            "content": "test_reply_content",
+            "comment_id": 18
+        }
         self.token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiQWRtaW4iLCJwZXJtaXNzaW9ucyI6eyJnZXRfYWxsX2xpc3RzIjoiQWxsIiwiY3JlYXRlX2xpc3QiOiJBbGwiLCJ1cGRhdGVfbGlzdCI6IkFsbCIsImRlbGV0ZV9saXN0IjoiQWxsIiwiZ2V0X2xpc3QiOiJBbGwiLCJhc3NpZ25fbWVtYmVyX2xpc3QiOiJBbGwiLCJyZXZva2VfbWVtYmVyX2xpc3QiOiJBbGwiLCJnZXRfYWxsX3VzZXJzIjoiQWxsIiwiY3JlYXRlX2NhcmQiOiJBbGwiLCJ1cGRhdGVfY2FyZCI6IkFsbCIsImRlbGV0ZV9jYXJkIjoiQWxsIiwiZ2V0X2NhcmQiOiJBbGwiLCJjcmVhdGVfY29tbWVudCI6IkFsbCIsInVwZGF0ZV9jb21tZW50IjoiQWxsIiwiZGVsZXRlX2NvbW1lbnQiOiJBbGwiLCJnZXRfY29tbWVudCI6IkFsbCIsImNyZWF0ZV9yZXBsaWVzIjoiQWxsIiwidXBkYXRlX3JlcGxpZXMiOiJBbGwiLCJkZWxldGVfcmVwbGllcyI6IkFsbCIsImdldF9yZXBsaWVzIjoiQWxsIn19.y5wsUQUdahJz_rIA7aiBDv786ioPm2OXNqmx0F8Rq_8'
         self.bad_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiQWRtaW4iLCJwZXJtaXNzaW9ucyI6eyJnZXRfYWxsX2xpc3RzIjpmYWxzZSwiY3JlYXRlX2xpc3QiOmZhbHNlLCJ1cGRhdGVfbGlzdCI6ZmFsc2UsImRlbGV0ZV9saXN0IjpmYWxzZSwiZ2V0X2xpc3QiOmZhbHNlLCJhc3NpZ25fbWVtYmVyX2xpc3QiOmZhbHNlLCJyZXZva2VfbWVtYmVyX2xpc3QiOmZhbHNlLCJnZXRfYWxsX3VzZXJzIjpmYWxzZSwiY3JlYXRlX2NhcmQiOmZhbHNlLCJ1cGRhdGVfY2FyZCI6ZmFsc2UsImRlbGV0ZV9jYXJkIjpmYWxzZSwiZ2V0X2NhcmQiOmZhbHNlLCJjcmVhdGVfY29tbWVudCI6ZmFsc2UsInVwZGF0ZV9jb21tZW50IjpmYWxzZSwiZGVsZXRlX2NvbW1lbnQiOmZhbHNlLCJnZXRfY29tbWVudCI6ZmFsc2UsImNyZWF0ZV9yZXBsaWVzIjpmYWxzZSwidXBkYXRlX3JlcGxpZXMiOmZhbHNlLCJkZWxldGVfcmVwbGllcyI6ZmFsc2UsImdldF9yZXBsaWVzIjpmYWxzZX19.KQtBc_SiindvMVTumfzmQ9bcg-QPlFPaKJbOHMJ7JjU'
         # binds the app to the current context
@@ -716,6 +732,130 @@ class IrithmTestCase(unittest.TestCase):
                     sess[ 'token' ] = self.bad_token
                 c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
                 res = c.patch('/reply', json={'reply_id': 8, 'title': 'test_error_content'})
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+    # test create new list to database
+    def test_post_user_list(self):
+        """Test post new list will return success"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.post('/list', json=self.list)
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(data[ 'success' ], True)
+            self.assertEqual(data[ 'message' ], 'list created successfully')
+
+    # test creating new list in database with forbidden token
+    def test_error_post_user_list_bad_token(self):
+        """Test error post new list with forbidden key token will raise error"""
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 2
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.post('/list', json=self.list)
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+    # test create new card to database
+    def test_post_user_card(self):
+        """Test post new card will return success"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.post('/card', json=self.card)
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(data[ 'success' ], True)
+            self.assertEqual(data[ 'message' ], 'card created successfully')
+
+    # test creating new card in database with forbidden token
+    def test_error_post_user_card_bad_token(self):
+        """Test error post new card with forbidden key token will raise error"""
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 2
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.post('/card', json=self.card)
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+    # test create new comment to database
+    def test_post_user_comment(self):
+        """Test post new comment will return success"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.post('/comment', json=self.comment)
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(data[ 'success' ], True)
+            self.assertEqual(data[ 'message' ], 'comment created successfully')
+
+    # test creating new comment in database with forbidden token
+    def test_error_post_user_comment_bad_token(self):
+        """Test error post new comment with forbidden key token will raise error"""
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 2
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.post('/comment', json=self.comment)
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+    # test create new reply to database
+    def test_post_user_reply(self):
+        """Test post new reply will return success"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.post('/reply', json=self.reply)
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(data[ 'success' ], True)
+            self.assertEqual(data[ 'message' ], 'reply created successfully')
+
+    # test creating new reply in database with forbidden token
+    def test_error_post_user_reply_bad_token(self):
+        """Test error post new reply with forbidden key token will raise error"""
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 2
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.post('/reply', json=self.reply)
                 data = json.loads(res.data)
 
             self.assertEqual(res.status_code, 401)
