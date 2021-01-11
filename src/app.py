@@ -866,7 +866,10 @@ def create_app():
                         user_comment.delete()
                         # decrement comments count on the card
                         user_card = Cards.query.get(user_card_id)
-                        user_card.comments_count -= 1
+                        if user_card.comments_count == 0:
+                            pass
+                        else:
+                            user_card.comments_count -= 1
                         user_card.update()
                         return jsonify({
                             'success': True,
@@ -987,7 +990,10 @@ def create_app():
                     user_reply.delete()
                     # decrement replies count on the card
                     user_comment = Comments.query.get(comment_id)
-                    user_comment.replies_count -= 1
+                    if user_comment.replies_count == 0:
+                        pass
+                    else:
+                        user_comment.replies_count -= 1
                     user_comment.update()
                     return jsonify({
                         'success': True,
