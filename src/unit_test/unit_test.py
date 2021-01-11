@@ -47,8 +47,8 @@ class IrithmTestCase(unittest.TestCase):
             'role': True
         }
         self.new_user_6 = {
-            'user_name': 'user_6',
-            'email': 'user_6@example.com',
+            'user_name': 'user_10',
+            'email': 'user_10@example.com',
             'password': 'djbvjshvhzxjvhzxmbv,zxb',
             'role': True
         }
@@ -273,8 +273,8 @@ class IrithmTestCase(unittest.TestCase):
             self.assertEqual(res.status_code, 200)
             self.assertTrue(data[ 'cards' ])
 
-    # test error get list by id from database with forbidden token
-    def test_error_get_list_bad_token(self):
+    # test error get cards from database with forbidden token
+    def test_error_get_cards_bad_token(self):
         """Test error query list will not return results with forbidden key token """
         with self.client() as c:
             with self.client() as c:
@@ -288,6 +288,162 @@ class IrithmTestCase(unittest.TestCase):
             self.assertEqual(res.status_code, 401)
             self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
             self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+    # test get card by id from database
+    def test_get_card_by_id(self):
+        """Test query get card by id will return results"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.get('/card/1')
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertTrue(data[ 'card' ])
+            self.assertTrue(data[ 'comments' ])
+
+    # test error get card by id from database with forbidden token
+    def test_error_get_card_bad_token(self):
+        """Test error query card will not return results with forbidden key token """
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 1
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.get('/card/1')
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+    # test get card comments by id from database
+    def test_get_card_comments_by_id(self):
+        """Test query get card comments by id will return results"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.get('/card/comments/', json={'card_id':1})
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertTrue(data[ 'comments' ])
+
+    # test error get card comments by id from database with forbidden token
+    def test_error_get_card_comments_bad_token(self):
+        """Test error query card comments will not return results with forbidden key token """
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 1
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.get('/card/comments/', json={'card_id':1})
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+    # test get comment replies by id from database
+    def test_get_comment_replies_by_id(self):
+        """Test query get comment replies by id will return results"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.get('/comment/replies', json={'comment_id':1})
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertTrue(data[ 'comment' ])
+            self.assertTrue(data[ 'replies' ])
+
+    # test error get comment replies by id from database with forbidden token
+    def test_error_get_comment_replies_bad_token(self):
+        """Test error query card comments will not return results with forbidden key token """
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 1
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.get('/comment/replies', json={'comment_id':1})
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+    # test delete signup request from database
+    def test_delete_user_signup_requet(self):
+        """Test user sign up request by id will return success"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.delete('/user/confirmation/15')
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(data[ 'success' ], True)
+            self.assertEqual(data[ 'message' ], 'User deleted successfully')
+
+    # test error deleting signup request by id from database with forbidden token
+    def test_error_delete_signup_request_bad_token(self):
+        """Test error deleting user request with forbidden key token will raise error"""
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 2
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.delete('/user/confirmation/15')
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'success' ], False)
+            self.assertEqual(data[ 'message' ], 'Unauthorized.')
+
+    # test delete user list from database
+    def test_delete_user_list(self):
+        """Test user list by id will return success"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 2
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.delete('/list/5')
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(data[ 'success' ], True)
+            self.assertEqual(data[ 'message' ], 'User deleted successfully')
+
+    # test error deleting list by id from database with forbidden token
+    def test_error_delete_list_bad_token(self):
+        """Test error deleting user list with forbidden key token will raise error"""
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 2
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.delete('/list/11')
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+
 
 
 # Make the tests conveniently executable

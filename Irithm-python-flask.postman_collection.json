@@ -319,13 +319,13 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/list/4",
+							"raw": "{{host}}/list/3",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"list",
-								"4"
+								"3"
 							]
 						}
 					},
