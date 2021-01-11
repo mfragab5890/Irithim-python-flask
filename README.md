@@ -200,8 +200,6 @@ The API will return error types when requests fail, example:
 - Requested Arguments:permission to get_all_users and page number
 - Returns an object with users
 
-# user log-in endpoint.
-# this endpoint should update session with user id and token if login is verified
 ##### POST '/login'
 
 - Function: make user user log-in & update session with user id and token if login is verified
