@@ -126,6 +126,7 @@ Setting the `FLASK_APP` variable to `app` directs flask to use the `app.py`.
 - exit the server but postgres running
 - run `src\unit_test\unit_test.py`
 - Note: multiple runs will require updating some data specially post user as user email and user name should be unique also any delete as running once will delete the required entity.
+- if any of the tests fail feel free to update the data sent like changing user_name, id. etc
 ## API References
 
 ### Getting Started
