@@ -47,8 +47,8 @@ class IrithmTestCase(unittest.TestCase):
             'role': True
         }
         self.new_user_6 = {
-            'user_name': 'user_10',
-            'email': 'user_10@example.com',
+            'user_name': 'user_X',
+            'email': 'user_x@example.com',
             'password': 'djbvjshvhzxjvhzxmbv,zxb',
             'role': True
         }
@@ -62,7 +62,7 @@ class IrithmTestCase(unittest.TestCase):
             "password": "tafiTAFI",
             "user_name": "mostafa_ragab"
         }
-        self.token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiQWRtaW4iLCJwZXJtaXNzaW9ucyI6eyJnZXRfYWxsX2xpc3RzIjoiQWxsIiwiY3JlYXRlX2xpc3QiOiJBbGwiLCJ1cGRhdGVfbGlzdCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZGVsZXRlX2xpc3QiOlsxLDIsMyw0LDUsNiw3LDgsOSwxMF0sImdldF9saXN0IjoiQWxsIiwiYXNzaWduX21lbWJlcl9saXN0IjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJyZXZva2VfbWVtYmVyX2xpc3QiOlsxLDIsMyw0LDUsNiw3LDgsOSwxMF0sImdldF9hbGxfdXNlcnMiOiJBbGwiLCJjcmVhdGVfY2FyZCI6IkFsbCIsInVwZGF0ZV9jYXJkIjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfY2FyZCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X2NhcmQiOiJBbGwiLCJjcmVhdGVfY29tbWVudCI6IkFsbCIsInVwZGF0ZV9jb21tZW50IjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfY29tbWVudCI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X2NvbW1lbnQiOiJBbGwiLCJjcmVhdGVfcmVwbGllcyI6IkFsbCIsInVwZGF0ZV9yZXBsaWVzIjpbMSwyLDMsNCw1LDYsNyw4LDksMTBdLCJkZWxldGVfcmVwbGllcyI6WzEsMiwzLDQsNSw2LDcsOCw5LDEwXSwiZ2V0X3JlcGxpZXMiOiJBbGwifX0.SPGXta7MX1hDVmi2jOXR33pexRc7M9GJ9cWEZLGKQn8'
+        self.token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiQWRtaW4iLCJwZXJtaXNzaW9ucyI6eyJnZXRfYWxsX2xpc3RzIjoiQWxsIiwiY3JlYXRlX2xpc3QiOiJBbGwiLCJ1cGRhdGVfbGlzdCI6IkFsbCIsImRlbGV0ZV9saXN0IjoiQWxsIiwiZ2V0X2xpc3QiOiJBbGwiLCJhc3NpZ25fbWVtYmVyX2xpc3QiOiJBbGwiLCJyZXZva2VfbWVtYmVyX2xpc3QiOiJBbGwiLCJnZXRfYWxsX3VzZXJzIjoiQWxsIiwiY3JlYXRlX2NhcmQiOiJBbGwiLCJ1cGRhdGVfY2FyZCI6IkFsbCIsImRlbGV0ZV9jYXJkIjoiQWxsIiwiZ2V0X2NhcmQiOiJBbGwiLCJjcmVhdGVfY29tbWVudCI6IkFsbCIsInVwZGF0ZV9jb21tZW50IjoiQWxsIiwiZGVsZXRlX2NvbW1lbnQiOiJBbGwiLCJnZXRfY29tbWVudCI6IkFsbCIsImNyZWF0ZV9yZXBsaWVzIjoiQWxsIiwidXBkYXRlX3JlcGxpZXMiOiJBbGwiLCJkZWxldGVfcmVwbGllcyI6IkFsbCIsImdldF9yZXBsaWVzIjoiQWxsIn19.y5wsUQUdahJz_rIA7aiBDv786ioPm2OXNqmx0F8Rq_8'
         self.bad_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiQWRtaW4iLCJwZXJtaXNzaW9ucyI6eyJnZXRfYWxsX2xpc3RzIjpmYWxzZSwiY3JlYXRlX2xpc3QiOmZhbHNlLCJ1cGRhdGVfbGlzdCI6ZmFsc2UsImRlbGV0ZV9saXN0IjpmYWxzZSwiZ2V0X2xpc3QiOmZhbHNlLCJhc3NpZ25fbWVtYmVyX2xpc3QiOmZhbHNlLCJyZXZva2VfbWVtYmVyX2xpc3QiOmZhbHNlLCJnZXRfYWxsX3VzZXJzIjpmYWxzZSwiY3JlYXRlX2NhcmQiOmZhbHNlLCJ1cGRhdGVfY2FyZCI6ZmFsc2UsImRlbGV0ZV9jYXJkIjpmYWxzZSwiZ2V0X2NhcmQiOmZhbHNlLCJjcmVhdGVfY29tbWVudCI6ZmFsc2UsInVwZGF0ZV9jb21tZW50IjpmYWxzZSwiZGVsZXRlX2NvbW1lbnQiOmZhbHNlLCJnZXRfY29tbWVudCI6ZmFsc2UsImNyZWF0ZV9yZXBsaWVzIjpmYWxzZSwidXBkYXRlX3JlcGxpZXMiOmZhbHNlLCJkZWxldGVfcmVwbGllcyI6ZmFsc2UsImdldF9yZXBsaWVzIjpmYWxzZX19.KQtBc_SiindvMVTumfzmQ9bcg-QPlFPaKJbOHMJ7JjU'
         # binds the app to the current context
         with self.app.app_context():
@@ -238,7 +238,7 @@ class IrithmTestCase(unittest.TestCase):
                 sess[ 'user_id' ] = 1
                 sess[ 'token' ] = self.token
             c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
-            res = c.get('/list', json={'list_id':1})
+            res = c.get('/list', json={'list_id': 1})
             data = json.loads(res.data)
 
             self.assertEqual(res.status_code, 200)
@@ -252,7 +252,7 @@ class IrithmTestCase(unittest.TestCase):
                 sess[ 'user_id' ] = 2
                 sess[ 'token' ] = self.bad_token
             c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
-            res = c.get('/list', json={'list_id':1})
+            res = c.get('/list', json={'list_id': 1})
             data = json.loads(res.data)
 
             self.assertEqual(res.status_code, 401)
@@ -328,7 +328,7 @@ class IrithmTestCase(unittest.TestCase):
                 sess[ 'user_id' ] = 1
                 sess[ 'token' ] = self.token
             c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
-            res = c.get('/card/comments/', json={'card_id':1})
+            res = c.get('/card/comments/', json={'card_id': 1})
             data = json.loads(res.data)
 
             self.assertEqual(res.status_code, 200)
@@ -343,7 +343,7 @@ class IrithmTestCase(unittest.TestCase):
                     sess[ 'user_id' ] = 1
                     sess[ 'token' ] = self.bad_token
                 c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
-                res = c.get('/card/comments/', json={'card_id':1})
+                res = c.get('/card/comments/', json={'card_id': 1})
                 data = json.loads(res.data)
 
             self.assertEqual(res.status_code, 401)
@@ -358,7 +358,7 @@ class IrithmTestCase(unittest.TestCase):
                 sess[ 'user_id' ] = 1
                 sess[ 'token' ] = self.token
             c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
-            res = c.get('/comment/replies', json={'comment_id':1})
+            res = c.get('/comment/replies', json={'comment_id': 1})
             data = json.loads(res.data)
 
             self.assertEqual(res.status_code, 200)
@@ -374,7 +374,7 @@ class IrithmTestCase(unittest.TestCase):
                     sess[ 'user_id' ] = 1
                     sess[ 'token' ] = self.bad_token
                 c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
-                res = c.get('/comment/replies', json={'comment_id':1})
+                res = c.get('/comment/replies', json={'comment_id': 1})
                 data = json.loads(res.data)
 
             self.assertEqual(res.status_code, 401)
@@ -383,7 +383,7 @@ class IrithmTestCase(unittest.TestCase):
 
     # test delete signup request from database
     def test_delete_user_signup_requet(self):
-        """Test user sign up request by id will return success"""
+        """Test deleting user sign up request by id will return success"""
         with self.client() as c:
             with c.session_transaction() as sess:
                 sess[ 'user_id' ] = 1
@@ -414,18 +414,18 @@ class IrithmTestCase(unittest.TestCase):
 
     # test delete user list from database
     def test_delete_user_list(self):
-        """Test user list by id will return success"""
+        """Test deleting user list by id will return success"""
         with self.client() as c:
             with c.session_transaction() as sess:
-                sess[ 'user_id' ] = 2
+                sess[ 'user_id' ] = 1
                 sess[ 'token' ] = self.token
             c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
-            res = c.delete('/list/5')
+            res = c.delete('/list/2')
             data = json.loads(res.data)
 
             self.assertEqual(res.status_code, 200)
             self.assertEqual(data[ 'success' ], True)
-            self.assertEqual(data[ 'message' ], 'User deleted successfully')
+            self.assertEqual(data[ 'message' ], 'list deleted successfully')
 
     # test error deleting list by id from database with forbidden token
     def test_error_delete_list_bad_token(self):
@@ -443,6 +443,129 @@ class IrithmTestCase(unittest.TestCase):
             self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
             self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
 
+    # test delete user list access from database
+    def test_delete_user_list_access(self):
+        """Test deleting user list access will return success"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.delete('/revocation', json={'list_id': 11, 'user_id': 1})
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(data[ 'success' ], True)
+            self.assertEqual(data[ 'message' ], 'member revoked successfully')
+
+    # test error deleting user list access from database with forbidden token
+    def test_error_delete_user_list_access_bad_token(self):
+        """Test error deleting user list access with forbidden key token will raise error"""
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 2
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.delete('/revocation', json={'list_id': 11, 'user_id': 1})
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+    # test delete user card from database
+    def test_delete_user_card(self):
+        """Test deleting user card will return success"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.delete('/card/3')
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(data[ 'success' ], True)
+            self.assertEqual(data[ 'message' ], 'card deleted successfully')
+
+    # test error deleting card from database with forbidden token
+    def test_error_delete_user_card_bad_token(self):
+        """Test error deleting user card with forbidden key token will raise error"""
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 2
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.delete('/card/2')
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+    # test delete user comment from database
+    def test_delete_user_comment(self):
+        """Test deleting user comment will return success"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.delete('/comment/15')
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(data[ 'success' ], True)
+            self.assertEqual(data[ 'message' ], 'comment deleted successfully')
+
+    # test error deleting comment from database with forbidden token
+    def test_error_delete_user_comment_bad_token(self):
+        """Test error deleting user comment with forbidden key token will raise error"""
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 2
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.delete('/comment/15')
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
+
+    # test delete user reply from database
+    def test_delete_user_reply(self):
+        """Test deleting user reply will return success"""
+        with self.client() as c:
+            with c.session_transaction() as sess:
+                sess[ 'user_id' ] = 1
+                sess[ 'token' ] = self.token
+            c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+            res = c.delete('/reply/8')
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(data[ 'success' ], True)
+            self.assertEqual(data[ 'message' ], 'reply deleted successfully')
+
+    # test error deleting reply from database with forbidden token
+    def test_error_delete_user_reply_bad_token(self):
+        """Test error deleting user reply with forbidden key token will raise error"""
+        with self.client() as c:
+            with self.client() as c:
+                with c.session_transaction() as sess:
+                    sess[ 'user_id' ] = 2
+                    sess[ 'token' ] = self.bad_token
+                c.set_cookie('localhost', 'MYCOOKIE', 'cookie_value')
+                res = c.delete('/reply/8')
+                data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 401)
+            self.assertEqual(data[ 'code' ], 'permission_access_forbidden')
+            self.assertEqual(data[ 'description' ], 'Access to this entity is forbidden.')
 
 
 
