@@ -82,10 +82,10 @@ class IrithmTestCase(unittest.TestCase):
         self.bad_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiQWRtaW4iLCJwZXJtaXNzaW9ucyI6eyJnZXRfYWxsX2xpc3RzIjpmYWxzZSwiY3JlYXRlX2xpc3QiOmZhbHNlLCJ1cGRhdGVfbGlzdCI6ZmFsc2UsImRlbGV0ZV9saXN0IjpmYWxzZSwiZ2V0X2xpc3QiOmZhbHNlLCJhc3NpZ25fbWVtYmVyX2xpc3QiOmZhbHNlLCJyZXZva2VfbWVtYmVyX2xpc3QiOmZhbHNlLCJnZXRfYWxsX3VzZXJzIjpmYWxzZSwiY3JlYXRlX2NhcmQiOmZhbHNlLCJ1cGRhdGVfY2FyZCI6ZmFsc2UsImRlbGV0ZV9jYXJkIjpmYWxzZSwiZ2V0X2NhcmQiOmZhbHNlLCJjcmVhdGVfY29tbWVudCI6ZmFsc2UsInVwZGF0ZV9jb21tZW50IjpmYWxzZSwiZGVsZXRlX2NvbW1lbnQiOmZhbHNlLCJnZXRfY29tbWVudCI6ZmFsc2UsImNyZWF0ZV9yZXBsaWVzIjpmYWxzZSwidXBkYXRlX3JlcGxpZXMiOmZhbHNlLCJkZWxldGVfcmVwbGllcyI6ZmFsc2UsImdldF9yZXBsaWVzIjpmYWxzZX19.KQtBc_SiindvMVTumfzmQ9bcg-QPlFPaKJbOHMJ7JjU'
         # binds the app to the current context
         with self.app.app_context():
-            self.db = SQLAlchemy()
+            self.db = db
             self.db.init_app(self.app)
             # create all tables
-            self.db.create_all(app=create_app())
+            self.db.create_all()
 
     def tearDown(self):
         """Executed after reach test"""
